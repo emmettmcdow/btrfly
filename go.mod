@@ -1,1 +1,1 @@
-module github.com/kache
+module github.com/emmettmcdow/kache
