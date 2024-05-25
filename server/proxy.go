@@ -242,7 +242,11 @@ func formatUpstreamResponse(dest http.ResponseWriter, src tempResponse) (err err
 	return err
 }
 
-func relayRequest(proxyReq *http.Request, httpClient *http.Client) (response tempResponse, err error) {
+type clientSender interface{
+	Do(r *http.Request) (response *http.Response, err error)
+}
+
+func relayRequest(proxyReq *http.Request, httpClient clientSender) (response tempResponse, err error) {
 	// Send the proxy request using the custom transport
 	resp, err := httpClient.Do(proxyReq)
 	if err != nil {
