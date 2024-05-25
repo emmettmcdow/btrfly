@@ -1,14 +1,14 @@
 package main
 
 import (
+	"bytes"
 	"context"
+	"github.com/emmettmcdow/kache/server/kache"
 	"io"
 	"log"
 	"net"
 	"net/http"
 	"time"
-	"bytes"
-    "github.com/emmettmcdow/kache/server/kache"
 )
 
 /*
@@ -50,8 +50,8 @@ const MODE_S proxy_mode = 2
 
 type tempResponse struct {
 	StatusCode int
-	Header http.Header
-	Body bytes.Buffer
+	Header     http.Header
+	Body       bytes.Buffer
 }
 
 func main() {
@@ -76,8 +76,8 @@ func main() {
 				if err != nil {
 					log.Printf("Failed to relay request to upstream: %s", err)
 					http.Error(w,
-								"Error creating proxy request",
-								http.StatusInternalServerError)
+						"Error creating proxy request",
+						http.StatusInternalServerError)
 				}
 				_, err = io.Copy(upstream_artifact, &response.Body)
 				if err != nil {
@@ -213,7 +213,7 @@ func generateUpstreamRequest(r *http.Request) (proxyReq *http.Request, err error
 	targetURL := "http://" + r.Host + r.URL.String()
 	proxyReq, err = http.NewRequest(r.Method, targetURL, r.Body)
 	if err != nil {
-		return proxyReq, err
+		return nil, err
 	}
 
 	// Copy the headers from the original request to the proxy request
@@ -264,6 +264,6 @@ func relayRequest(proxyReq *http.Request, httpClient *http.Client) (response tem
 	return response, err
 }
 
-func respondWithArtifact(w http.ResponseWriter, r *http.Request, httpClient *http.Client) (err error){
+func respondWithArtifact(w http.ResponseWriter, r *http.Request, httpClient *http.Client) (err error) {
 	return err
 }
