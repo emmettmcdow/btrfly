@@ -8,25 +8,8 @@ import (
 	"strings"
 	"testing"
 	"io"
+	"bytes"
 )
-
-type fakeBody struct {
-	Data string
-}
-
-func (b fakeBody) Read(p []byte) (n int, err error) {
-	for n, _ = range p {
-		if n >= len(b.Data) {
-			break
-		}
-		p[n] = b.Data[n]
-	}
-	return n, nil
-}
-
-func (b fakeBody) Close() (err error) {
-	return nil
-}
 
 type relayRequestCase struct {
 	name string
@@ -40,7 +23,7 @@ type DumbClient struct {
 }
 
 func (d DumbClient) Do(r *http.Request) (response *http.Response, err error) {
-
+	response = &http.Response{Header: http.Header{}}
 	for name, values := range r.Header {
 		for _, value := range values {
 			response.Header.Add(name, value)
@@ -49,32 +32,38 @@ func (d DumbClient) Do(r *http.Request) (response *http.Response, err error) {
 
 	response.StatusCode = 200
 
-	response.Body = r.Body
-
+	tmpBod, err := io.ReadAll(r.Body)
+	if err != nil {
+		fmt.Println("SOmething went wrong")
+	}
+	response.Body = io.NopCloser(bytes.NewReader(tmpBod))
+	
 	return response, nil
 }
 
 func TestRelayRequest(t *testing.T) {
 	var fakeClient clientSender
 	
+	fmt.Println("Begin")
 	stdHeader := http.Header{
 		"Key1": {"1a", "1b", "1c"},
 		"Key2": {"2a", "2b", "2c"},
 		"Key3": {"3a", "3b", "3c"},
 	}
-	stdBody := fakeBody{Data: "Woohoo!\noh no\n WOOHOO! "}
+	stdText := "Woohoo!\noh no\n WOOHOO! "
+	stdBody := strings.NewReader(stdText)
 	stdRequest, _ := http.NewRequest("GET", "http://google.com/a/b/c", stdBody)
 	stdRequest.Header = stdHeader
 
 	successResponse := tempResponse{StatusCode: 200, Header: stdHeader}
-	io.Copy(&successResponse.Body, &stdBody)
+	io.Copy(&successResponse.Body, stdBody)
+	stdBody.Reset(stdText)
 
 	fakeClient = DumbClient{}
 	
 	cases := []relayRequestCase {
 		{"Fake client GET success", stdRequest, &fakeClient, successResponse, nil},
 	}
-
 	for _, tc := range cases {
 		t.Run(fmt.Sprintf("%s: %s %s", tc.name, tc.req.Method, tc.req.URL), func(t *testing.T) {
 			got, err := relayRequest(tc.req, *tc.client)
@@ -120,12 +109,13 @@ type genUpstreamRequest struct {
 }
 
 func TestGenerateUpstreamRequest(t *testing.T) {
+	
 	stdHeader := http.Header{
 		"Key1": {"1a", "1b", "1c"},
 		"Key2": {"2a", "2b", "2c"},
 		"Key3": {"3a", "3b", "3c"},
 	}
-	stdBody := fakeBody{Data: "Woohoo!\noh no\n WOOHOO! "}
+	stdBody := io.NopCloser(strings.NewReader("Woohoo!\noh no\n WOOHOO! "))
 	r, _ := http.NewRequest("GET", "http://google.com/a/b/c", stdBody)
 
 	cases := []genUpstreamRequest{
