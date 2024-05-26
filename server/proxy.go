@@ -253,6 +253,7 @@ func relayRequest(proxyReq *http.Request, httpClient clientSender) (response tem
 		return response, err
 	}
 	defer resp.Body.Close()
+	response.Header = http.Header{}
 	// Copy the headers from the proxy response to the original response
 	for name, values := range resp.Header {
 		for _, value := range values {
