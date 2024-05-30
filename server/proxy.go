@@ -243,7 +243,7 @@ func formatUpstreamResponse(dest http.ResponseWriter, src tempResponse) (err err
 }
 
 type clientSender interface{
-	Do(r *http.Request) (response *http.Response, err error)
+	Do(r *http.Request) (*http.Response, error)
 }
 
 func relayRequest(proxyReq *http.Request, httpClient clientSender) (response tempResponse, err error) {

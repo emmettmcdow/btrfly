@@ -9,17 +9,11 @@ import (
 	"testing"
 	"io"
 	"bytes"
+	"errors"
 )
 
-type relayRequestCase struct {
-	name string
-	req *http.Request
-	client *clientSender
-	want tempResponse
-	expectedErr error
-}
-
 type DumbClient struct {
+	Err error
 }
 
 func (d DumbClient) Do(r *http.Request) (response *http.Response, err error) {
@@ -38,7 +32,15 @@ func (d DumbClient) Do(r *http.Request) (response *http.Response, err error) {
 	}
 	response.Body = io.NopCloser(bytes.NewReader(tmpBod))
 	
-	return response, nil
+	return response, d.Err
+}
+
+type relayRequestCase struct {
+	name string
+	req *http.Request
+	client *clientSender
+	want tempResponse
+	expectedErr error
 }
 
 func TestRelayRequest(t *testing.T) {
@@ -53,20 +55,25 @@ func TestRelayRequest(t *testing.T) {
 	stdText := "Woohoo!\noh no\n WOOHOO! "
 	stdBody := strings.NewReader(stdText)
 	stdRequest, _ := http.NewRequest("GET", "http://google.com/a/b/c", stdBody)
+	badRequest, _ := http.NewRequest("GET", "http://FAKE.com/not/real", stdBody)
 	stdRequest.Header = stdHeader
 
 	successResponse := tempResponse{StatusCode: 200, Header: stdHeader}
 	io.Copy(&successResponse.Body, stdBody)
 	stdBody.Reset(stdText)
 
-	fakeClient = DumbClient{}
+	fakeClient = DumbClient{Err: nil}
 	
 	cases := []relayRequestCase {
 		{"Fake client GET success", stdRequest, &fakeClient, successResponse, nil},
+		{"Fake client GET failure", badRequest, &fakeClient, tempResponse{}, errors.New("bigfail")},
 	}
 	for _, tc := range cases {
 		t.Run(fmt.Sprintf("%s: %s %s", tc.name, tc.req.Method, tc.req.URL), func(t *testing.T) {
-			got, err := relayRequest(tc.req, *tc.client)
+			// TODO: if this becomes anything besides DumbClient, it's time to change this assertion
+			client := (*tc.client).(DumbClient)
+			client.Err = tc.expectedErr
+			got, err := relayRequest(tc.req, client)
 			if tc.expectedErr != nil {
 				if err == nil {
 					t.Errorf("err: got %v, want %v", err, tc.expectedErr)
