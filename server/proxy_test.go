@@ -138,6 +138,15 @@ func TestGenerateUpstreamRequest(t *testing.T) {
 				Header: stdHeader},
 			nil,
 		},
+		{
+			&http.Request{Host: "		",
+				URL:    &url.URL{Path: ""},
+				Method: "GUT",
+				Body:   stdBody,
+				Header: stdHeader},
+			nil,
+			errors.New("?"),
+		},
 	}
 
 	for _, tc := range cases {
