@@ -10,8 +10,32 @@ import (
 	"io"
 	"bytes"
 	"errors"
+	"testing/fstest"
+	// "time"
+	// "io/fs"
 )
 
+// ************************************************************** Integration Tests
+
+func TestProxy(t *testing.T) {
+
+	memoryFS := fstest.MapFS{
+	"root/a": {Data: []byte("this is the /root/a file")},
+	"root/b": {Data: []byte("this is the /root/b file")},
+	"root/c": {Data: []byte("this is the /root/c file")},
+	}
+
+	// TODO: Concurrency
+	http.ListenAndServe(":1234", http.FileServerFS(memoryFS))
+
+	// TODO: Make the Host and IP different so that Kache can do its thing
+	req := Request{Method: "GET",
+				   Host:   "127.0.0.1:1234",
+				   Path:   "/root/a"}
+	resp, err := http.Do(req)
+}
+
+// ************************************************************** Unit Tests | 
 type DumbClient struct {
 	Err error
 }
@@ -34,7 +58,7 @@ func (d DumbClient) Do(r *http.Request) (response *http.Response, err error) {
 	
 	return response, d.Err
 }
-
+// TODO: Anonymize the case structs - more idiomatic
 type relayRequestCase struct {
 	name string
 	req *http.Request
@@ -181,3 +205,60 @@ func TestGenerateUpstreamRequest(t *testing.T) {
 		})
 	}
 }
+
+// type formUpstreamResponse struct {
+// 	res         tempResponse
+// 	want        *tempResponse
+// 	expectedErr error
+// }
+
+// func TestGenerateUpstreamRequest(t *testing.T) {
+	
+// 	stdHeader := http.Header{
+// 		"Key1": {"1a", "1b", "1c"},
+// 		"Key2": {"2a", "2b", "2c"},
+// 		"Key3": {"3a", "3b", "3c"},
+// 	}
+// 	stdBody := io.NopCloser(strings.NewReader("Woohoo!\noh no\n WOOHOO! "))
+// 	r, _ := http.NewRequest("GET", "http://google.com/a/b/c", stdBody)
+
+// 	cases := []formUpstreamResponse{
+// 		{
+// 			&http.Response{StatusCode: 200,
+// 				Body:   stdBody,
+// 				Header: stdHeader},
+// 			&tempResponse{StatusCode: 200,
+// 				Body:   stdBody,
+// 				Header: stdHeader},
+// 			nil,
+// 		}
+// 	}
+
+// 	for _, tc := range cases {
+// 		t.Run(fmt.Sprintf("%s %s%s", tc.res., tc.res.Host, tc.res.URL.String()), func(t *testing.T) {
+// 			got, err := formatUpstreamResponse(tc.res)
+
+// 			if tc.expectedErr != nil {
+// 				if err == nil {
+// 					t.Errorf("err: got %v, want %v", err, tc.expectedErr)
+// 				}
+// 				if got != nil {
+// 					t.Error("req: request non-nil on error")
+// 				}
+
+// 			} else {
+// 				if got.Body != tc.want.Body {
+// 					t.Errorf("request.Body: got %s, want %s", got.Body, tc.want.Body)
+// 				}
+
+// 				if got.StatusCode != tc.want.StatusCode {
+// 					t.Errorf("request.StatusCode: got %s, want %s", got.StatusCode, tc.want.StatusCode)
+// 				}
+
+// 				if !reflect.DeepEqual(got.Header, tc.want.Header) {
+// 					t.Errorf("request.Body: got \n%s\nwant \n%s\n", prettyHeader(got.Header), prettyHeader(tc.want.Header))
+// 				}
+// 			}
+// 		})
+// 	}
+// }
