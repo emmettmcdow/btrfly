@@ -10,5 +10,5 @@ import "github.com/kache/client/dns"
 
 func main() {
 	dnsCmd := flag.NewFlagSet("dns", flag.ExitOnError)
-	
+
 }

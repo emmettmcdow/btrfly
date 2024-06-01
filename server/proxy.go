@@ -13,10 +13,10 @@ import (
 
 /*
 States:
-    - Recording / Playback / Standby   - R/P/S
-    - Kache Present / Not Present      - KP/KN
-    - Upstream Exists / Does Not Exist - UE/UD
-    - Upstream New / Old               - UN/UO
+  - Recording / Playback / Standby   - R/P/S
+  - Kache Present / Not Present      - KP/KN
+  - Upstream Exists / Does Not Exist - UE/UD
+  - Upstream New / Old               - UN/UO
 
 Expected Behavior For Each State:
 |
@@ -242,7 +242,7 @@ func formatUpstreamResponse(dest http.ResponseWriter, src tempResponse) (err err
 	return err
 }
 
-type clientSender interface{
+type clientSender interface {
 	Do(r *http.Request) (*http.Response, error)
 }
 

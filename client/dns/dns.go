@@ -1,6 +1,7 @@
 package main
 
 import "os/exec"
+
 // import "log"
 import "fmt"
 import "strings"
@@ -56,12 +57,12 @@ func MacDNSConfigForInterface(interface_name string, ip string) {
 	cmd.Stderr = &stderr
 	err := cmd.Run()
 	if err != nil {
-	    fmt.Println(fmt.Sprint(err) + "2: " + stderr.String())
+		fmt.Println(fmt.Sprint(err) + "2: " + stderr.String())
 		return
 	}
 }
 
-func DeleteEmpty (s []string) []string {
+func DeleteEmpty(s []string) []string {
 	var r []string
 	for _, str := range s {
 		if str != "" {
@@ -80,7 +81,7 @@ func MacGetAllNetworkServices() (interfaces []string) {
 	cmd.Stderr = &stderr
 	err := cmd.Run()
 	if err != nil {
-	    fmt.Println(fmt.Sprint(err) + "3: " + stderr.String())
+		fmt.Println(fmt.Sprint(err) + "3: " + stderr.String())
 	}
 
 	interfaces = DeleteEmpty(strings.Split(out.String(), "\n")[1:])
@@ -97,8 +98,8 @@ func MacDNSFlushCache() {
 	cmd.Stderr = &stderr
 	err := cmd.Run()
 	if err != nil {
-	    fmt.Println(fmt.Sprint(err) + "4: " + stderr.String())
-	    return
+		fmt.Println(fmt.Sprint(err) + "4: " + stderr.String())
+		return
 	}
 	// TODO: do something about this sudo? Seems the only one that requires it...
 	cmd = exec.Command("sudo", "killall", "-HUP", "mDNSResponder")
@@ -106,8 +107,8 @@ func MacDNSFlushCache() {
 	cmd.Stderr = &stderr
 	err = cmd.Run()
 	if err != nil {
-	    fmt.Println(fmt.Sprint(err) + "5: " + stderr.String())
-	    return
+		fmt.Println(fmt.Sprint(err) + "5: " + stderr.String())
+		return
 	}
 }
 
@@ -119,7 +120,7 @@ func MacDNSDeconfigForInterface(interface_name string) {
 	cmd.Stderr = &stderr
 	err := cmd.Run()
 	if err != nil {
-	    fmt.Println(fmt.Sprint(err) + "6: " + stderr.String())
+		fmt.Println(fmt.Sprint(err) + "6: " + stderr.String())
 		return
 	}
 }
