@@ -61,6 +61,7 @@ func TestProxy(t *testing.T) {
 		{"GET", "http://127.0.0.1:1234/root/a", struct{ ResponseCode int }{200}},
 		{"GET", "http://127.0.0.1:1234/root/b", struct{ ResponseCode int }{200}},
 		{"GET", "http://127.0.0.1:1234/root/c", struct{ ResponseCode int }{200}},
+		{"GET", "http://127.0.0.1:1234/root/DNE", struct{ ResponseCode int }{404}},
 	}
 	for _, tc := range cases {
 		t.Run(fmt.Sprintf("%s %s - %d", tc.Method, tc.Url, tc.Response.ResponseCode), func(t *testing.T) {
