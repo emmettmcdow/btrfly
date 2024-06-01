@@ -1,10 +1,10 @@
 package dns
 
 import (
-	"testing"
 	"net"
-	"runtime"
 	"os/exec"
+	"runtime"
+	"testing"
 )
 
 // We only want to test for "Was the DNS configured properly?"
@@ -41,7 +41,7 @@ func MacDnsLookupHelper(t *testing.T, callback callback_t) {
 	err = callback()
 	if err != nil {
 		t.Error("Failed to look up the IP. You should see about fixing the " +
-			    "configuration manually because MacDNSDeconfig is wildin'.")
+			"configuration manually because MacDNSDeconfig is wildin'.")
 	}
 }
 
@@ -55,7 +55,6 @@ func TestMacDnsGolangDNS(t *testing.T) {
 	})
 }
 
-
 func TestMacDnsNslookup(t *testing.T) {
 	if runtime.GOOS != "darwin" {
 		MacDNSFlushCache()
@@ -68,7 +67,7 @@ func TestMacDnsNslookup(t *testing.T) {
 
 	MacDnsLookupHelper(t, func() (err error) {
 		cmd := exec.Command("nslookup", "google.com")
-		err = 	cmd.Run()
+		err = cmd.Run()
 		return err
 	})
 }
@@ -104,5 +103,3 @@ func TestMacDnsCurl(t *testing.T) {
 		return err
 	})
 }
-
-

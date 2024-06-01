@@ -1,16 +1,16 @@
 package main
 
 import (
+	"bytes"
+	"errors"
 	"fmt"
-	"net/http"
+	"io"
 	"net"
+	"net/http"
 	"net/url"
 	"reflect"
 	"strings"
 	"testing"
-	"io"
-	"bytes"
-	"errors"
 	"testing/fstest"
 	// "time"
 	// "io/fs"
@@ -24,9 +24,9 @@ func TestProxy(t *testing.T) {
 	serverReady := make(chan bool)
 
 	memoryFS := fstest.MapFS{
-	"root/a": {Data: []byte("this is the /root/a file")},
-	"root/b": {Data: []byte("this is the /root/b file")},
-	"root/c": {Data: []byte("this is the /root/c file")},
+		"root/a": {Data: []byte("this is the /root/a file")},
+		"root/b": {Data: []byte("this is the /root/b file")},
+		"root/c": {Data: []byte("this is the /root/c file")},
 	}
 
 	// Kache
@@ -49,18 +49,18 @@ func TestProxy(t *testing.T) {
 		}
 	}()
 
-	<- serverReady
+	<-serverReady
 
-	cases := []struct{
-		Method string
-		Url    string
-		Response   struct{
+	cases := []struct {
+		Method   string
+		Url      string
+		Response struct {
 			ResponseCode int
 		}
 	}{
-		{"GET", "http://127.0.0.1:1234/root/a", struct{ResponseCode int}{200}},
-		{"GET", "http://127.0.0.1:1234/root/b", struct{ResponseCode int}{200}},
-		{"GET", "http://127.0.0.1:1234/root/c", struct{ResponseCode int}{200}},
+		{"GET", "http://127.0.0.1:1234/root/a", struct{ ResponseCode int }{200}},
+		{"GET", "http://127.0.0.1:1234/root/b", struct{ ResponseCode int }{200}},
+		{"GET", "http://127.0.0.1:1234/root/c", struct{ ResponseCode int }{200}},
 	}
 	for _, tc := range cases {
 		t.Run(fmt.Sprintf("%s %s - %d", tc.Method, tc.Url, tc.Response.ResponseCode), func(t *testing.T) {
@@ -86,7 +86,7 @@ func TestProxy(t *testing.T) {
 	}
 }
 
-// ************************************************************** Unit Tests | 
+// ************************************************************** Unit Tests |
 type DumbClient struct {
 	Err error
 }
@@ -106,21 +106,22 @@ func (d DumbClient) Do(r *http.Request) (response *http.Response, err error) {
 		fmt.Println("SOmething went wrong")
 	}
 	response.Body = io.NopCloser(bytes.NewReader(tmpBod))
-	
+
 	return response, d.Err
 }
+
 // TODO: Anonymize the case structs - more idiomatic
 type relayRequestCase struct {
-	name string
-	req *http.Request
-	client *clientSender
-	want tempResponse
+	name        string
+	req         *http.Request
+	client      *clientSender
+	want        tempResponse
 	expectedErr error
 }
 
 func TestRelayRequest(t *testing.T) {
 	var fakeClient clientSender
-	
+
 	stdHeader := http.Header{
 		"Key1": {"1a", "1b", "1c"},
 		"Key2": {"2a", "2b", "2c"},
@@ -137,8 +138,8 @@ func TestRelayRequest(t *testing.T) {
 	stdBody.Reset(stdText)
 
 	fakeClient = DumbClient{Err: nil}
-	
-	cases := []relayRequestCase {
+
+	cases := []relayRequestCase{
 		{"Fake client GET success", stdRequest, &fakeClient, successResponse, nil},
 		{"Fake client GET failure", badRequest, &fakeClient, tempResponse{}, errors.New("bigfail")},
 	}
@@ -190,7 +191,7 @@ type genUpstreamRequest struct {
 }
 
 func TestGenerateUpstreamRequest(t *testing.T) {
-	
+
 	stdHeader := http.Header{
 		"Key1": {"1a", "1b", "1c"},
 		"Key2": {"2a", "2b", "2c"},
@@ -263,7 +264,7 @@ func TestGenerateUpstreamRequest(t *testing.T) {
 // }
 
 // func TestGenerateUpstreamRequest(t *testing.T) {
-	
+
 // 	stdHeader := http.Header{
 // 		"Key1": {"1a", "1b", "1c"},
 // 		"Key2": {"2a", "2b", "2c"},
