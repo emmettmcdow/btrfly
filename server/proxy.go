@@ -55,9 +55,16 @@ type tempResponse struct {
 }
 
 func main() {
+	var k kache.Handler
+
+	// TODO: this is temporary for testing
+	k = kache.CreateMemory()
+	k.AddUser(kache.CreateUser())
+	
 	var proxy_mode = MODE_S
 	var build_id = ""
 	var httpClient *http.Client
+	var currUser uint64 = 0
 
 	log.Print("Starting Kache...")
 
@@ -69,7 +76,7 @@ func main() {
 		// TODO: use the conditional get
 		switch proxy_mode {
 		case MODE_R:
-			artifact, err := kache.GetArtifact(full_url, build_id)
+			artifact, err := k.GetArtifact(full_url, build_id, currUser)
 			if err != nil {
 				var upstream_artifact kache.Artifact
 				response, err := relayRequest(r, httpClient)
@@ -79,7 +86,7 @@ func main() {
 						"Error creating proxy request",
 						http.StatusInternalServerError)
 				}
-				_, err = io.Copy(upstream_artifact, &response.Body)
+				_, err = io.Copy(&upstream_artifact, &response.Body)
 				if err != nil {
 					log.Printf("Failed to copy over http response body to kache: %s", err)
 					http.Error(w,
@@ -88,7 +95,7 @@ func main() {
 				}
 				// TODO: be more efficient?
 				if !upstream_artifact.Equal(artifact) {
-					kache.AddArtifact(artifact, full_url, build_id)
+					err = k.AddArtifact(artifact, full_url, build_id, currUser)
 					if err != nil {
 						log.Printf("Failed to add artifact to Kache: %s", err)
 						http.Error(w,
@@ -111,7 +118,7 @@ func main() {
 						"Error creating proxy request",
 						http.StatusInternalServerError)
 				}
-				kache.AddArtifact(artifact, full_url, build_id)
+				err = k.AddArtifact(artifact, full_url, build_id, currUser)
 				if err != nil {
 					log.Printf("Failed to add artifact to Kache: %s", err)
 					http.Error(w,
@@ -127,7 +134,7 @@ func main() {
 				}
 			}
 		case MODE_P:
-			_, err := kache.GetArtifact(full_url, build_id)
+			_, err := k.GetArtifact(full_url, build_id, currUser)
 			if err != nil {
 				log.Printf("Failed to retrieve the requested artifact from Kache. "+
 					"Something went seriously wrong.: %s", err)
