@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"net"
 	"net/url"
 	"reflect"
 	"strings"
@@ -19,20 +20,44 @@ import (
 
 func TestProxy(t *testing.T) {
 
+	httpClient := http.DefaultClient
+	serverReady := make(chan bool)
+
 	memoryFS := fstest.MapFS{
 	"root/a": {Data: []byte("this is the /root/a file")},
 	"root/b": {Data: []byte("this is the /root/b file")},
 	"root/c": {Data: []byte("this is the /root/c file")},
 	}
 
-	// TODO: Concurrency
-	http.ListenAndServe(":1234", http.FileServerFS(memoryFS))
+	go func() {
+		l, err := net.Listen("tcp", ":1234")
+		if err != nil {
+			fmt.Printf("Listener failed: %s\n", err)
+		}
 
+		// Signal that server is open for business.
+		serverReady <- true
+
+		if err := http.Serve(l, http.FileServerFS(memoryFS)); err != nil {
+			fmt.Printf("Server failed: %s\n", err)
+		}
+	}()
+
+	<- serverReady
 	// TODO: Make the Host and IP different so that Kache can do its thing
-	req := Request{Method: "GET",
-				   Host:   "127.0.0.1:1234",
-				   Path:   "/root/a"}
-	resp, err := http.Do(req)
+	// TODO: actually add in Kache ;)
+	req, err := http.NewRequest("GET", "http://127.0.0.1:1234/root/a", http.NoBody)
+	if err != nil {
+		fmt.Printf("Failed to create new request: %s\n", err)
+		return
+	}
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		fmt.Printf("Failed to do http request: %s\n", err)
+	} else {
+		fmt.Println("Succeeded in http request")
+		fmt.Println(resp)
+	}
 }
 
 // ************************************************************** Unit Tests | 
