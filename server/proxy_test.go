@@ -29,6 +29,12 @@ func TestProxy(t *testing.T) {
 	"root/c": {Data: []byte("this is the /root/c file")},
 	}
 
+	// Kache
+	go func() {
+		main()
+	}()
+
+	// Upstream Server
 	go func() {
 		l, err := net.Listen("tcp", ":1234")
 		if err != nil {
@@ -39,21 +45,26 @@ func TestProxy(t *testing.T) {
 		serverReady <- true
 
 		if err := http.Serve(l, http.FileServerFS(memoryFS)); err != nil {
-			fmt.Printf("Server failed: %s\n", err)
+			t.Errorf("Server failed: %s\n", err)
 		}
 	}()
 
 	<- serverReady
-	// TODO: Make the Host and IP different so that Kache can do its thing
-	// TODO: actually add in Kache ;)
+
 	req, err := http.NewRequest("GET", "http://127.0.0.1:1234/root/a", http.NoBody)
 	if err != nil {
-		fmt.Printf("Failed to create new request: %s\n", err)
+		t.Errorf("Failed to create new request: %s\n", err)
 		return
 	}
+	// Doing the part of the Kache client here - Redirecting to proxy
+	newURL, err := url.Parse("http://127.0.0.1:80/root/a")
+	if err != nil {
+		t.Errorf("Failed to modify existing url: %s\n", err)
+	}
+	req.URL = newURL
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		fmt.Printf("Failed to do http request: %s\n", err)
+		t.Errorf("Failed to do http request: %s\n", err)
 	} else {
 		fmt.Println("Succeeded in http request")
 		fmt.Println(resp)
