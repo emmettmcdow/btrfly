@@ -51,23 +51,38 @@ func TestProxy(t *testing.T) {
 
 	<- serverReady
 
-	req, err := http.NewRequest("GET", "http://127.0.0.1:1234/root/a", http.NoBody)
-	if err != nil {
-		t.Errorf("Failed to create new request: %s\n", err)
-		return
+	cases := []struct{
+		Method string
+		Url    string
+		Response   struct{
+			ResponseCode int
+		}
+	}{
+		{"GET", "http://127.0.0.1:1234/root/a", struct{ResponseCode int}{200}},
+		{"GET", "http://127.0.0.1:1234/root/b", struct{ResponseCode int}{200}},
+		{"GET", "http://127.0.0.1:1234/root/c", struct{ResponseCode int}{200}},
 	}
-	// Doing the part of the Kache client here - Redirecting to proxy
-	newURL, err := url.Parse("http://127.0.0.1:80/root/a")
-	if err != nil {
-		t.Errorf("Failed to modify existing url: %s\n", err)
-	}
-	req.URL = newURL
-	resp, err := httpClient.Do(req)
-	if err != nil {
-		t.Errorf("Failed to do http request: %s\n", err)
-	} else {
-		fmt.Println("Succeeded in http request")
-		fmt.Println(resp)
+	for _, tc := range cases {
+		t.Run(fmt.Sprintf("%s %s - %d", tc.Method, tc.Url, tc.Response.ResponseCode), func(t *testing.T) {
+			req, err := http.NewRequest(tc.Method, tc.Url, http.NoBody)
+			if err != nil {
+				t.Errorf("Failed to create new request: %s\n", err)
+				return
+			}
+			// Doing the part of the Kache client here - Redirecting to proxy
+			newURL, err := url.Parse(strings.ReplaceAll(tc.Url, "1234", "80"))
+			if err != nil {
+				t.Errorf("Failed to modify existing url: %s\n", err)
+			}
+			req.URL = newURL
+			resp, err := httpClient.Do(req)
+			if err != nil {
+				t.Errorf("Failed to do http request: %s\n", err)
+			}
+			if resp.StatusCode != tc.Response.ResponseCode {
+				t.Errorf("Response Code - Got: %d, Want: %d\n", resp.StatusCode, tc.Response.ResponseCode)
+			}
+		})
 	}
 }
 
@@ -106,7 +121,6 @@ type relayRequestCase struct {
 func TestRelayRequest(t *testing.T) {
 	var fakeClient clientSender
 	
-	fmt.Println("Begin")
 	stdHeader := http.Header{
 		"Key1": {"1a", "1b", "1c"},
 		"Key2": {"2a", "2b", "2c"},
