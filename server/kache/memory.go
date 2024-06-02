@@ -23,7 +23,8 @@ func (m *Memory) GetArtifact(url string, tagID string, userID uint64) (artifact 
 	}
 	tag, ok := user.Tags[tagID]
 	if !ok {
-		return artifact, errors.New(fmt.Sprintf("Failed to get tag with ID: %d", tagID))
+		tag = &Tag{Artifacts: make(map[string]*Artifact)}
+		user.Tags[tagID] = tag
 	}
 	artifact, ok = tag.Artifacts[url]
 	if !ok {
@@ -58,9 +59,13 @@ func (m *Memory) AddArtifact(artifact *Artifact, url string, tagID string, userI
 	return nil
 }
 
+func (m *Memory) TagArtifact(artifact *Artifact, tag string, URL string, userID uint64) () {
+	m.Users[userID].Tags[tag].Artifacts[URL] = artifact
+}
+
 func CreateMemory() (m *Memory){
-	a := make([]*Artifact, 1)
-	u := make([]*User, 1)
+	a := make([]*Artifact, 0)
+	u := make([]*User, 0)
 	m = &Memory{Artifacts: a, Users: u}
 	return m
 }
