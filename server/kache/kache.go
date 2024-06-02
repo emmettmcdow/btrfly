@@ -2,10 +2,12 @@ package kache
 
 import (
 	"bytes"
+    "crypto/md5"
+    "encoding/hex"
 )
 
 type Artifact struct {
-	Hash   uint64
+	Hash   string
 	Data   []byte
 }
 
@@ -22,6 +24,7 @@ type User struct {
 type Handler interface {
 	GetArtifact(url string, id string, userID uint64) (artifact *Artifact, err error)
 	AddArtifact(artifact *Artifact, url string, id string, userID uint64) (err error)
+	TagArtifact(artifact *Artifact, tag string, URL string, userID uint64)
 	AddUser(user *User)
 }
 
@@ -32,8 +35,21 @@ func (a *Artifact) Equal(b *Artifact) bool {
 	return bytes.Equal(a.Data, b.Data)
 }
 
-func (a Artifact) Write(p []byte) (n int, err error) {
-	return
+func (a *Artifact) Write(p []byte) (n int, err error) {
+
+	n = len(p)
+	if a.Data == nil {
+		a.Data = make([]byte, n)
+	}
+	
+	for i, b := range p {
+		a.Data[i] = b
+	}
+
+	hash := md5.Sum(a.Data)
+	a.Hash = hex.EncodeToString(hash[:])
+	
+	return n, err
 }
 
 func CreateUser() (user *User) {

@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"context"
 	"github.com/emmettmcdow/kache/server/kache"
 	"io"
@@ -48,10 +49,14 @@ const MODE_R proxy_mode = 0
 const MODE_P proxy_mode = 1
 const MODE_S proxy_mode = 2
 
+var ProxyMode = MODE_S
+var BuildTag = "shoop da woop"
+
+// TODO: optimize the buffer, switch to byte slice
 type tempResponse struct {
 	StatusCode int
 	Header     http.Header
-	Body       bytes.Buffer
+	Body       []byte
 }
 
 func main() {
@@ -61,8 +66,6 @@ func main() {
 	k = kache.CreateMemory()
 	k.AddUser(kache.CreateUser())
 	
-	var proxy_mode = MODE_S
-	var build_id = ""
 	var httpClient *http.Client
 	var currUser uint64 = 0
 
@@ -70,84 +73,82 @@ func main() {
 
 	httpClient = init_custom_transport()
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+    m := http.NewServeMux()
+    s := http.Server{Addr: ":80", Handler: m}
+	m.HandleFunc("/shutdown", func(w http.ResponseWriter, r *http.Request) {
+		full_url := r.Host + r.URL.String()
+		log.Printf("Received a %s request to %s", r.Method, full_url)
+		http.Error(w, "Shutting down", 400)
+		s.Shutdown(context.Background())
+	})
+	m.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		full_url := r.Host + r.URL.String()
 		log.Printf("Received a %s request to %s", r.Method, full_url)
 		// TODO: use the conditional get
-		switch proxy_mode {
+		switch ProxyMode {
 		case MODE_R:
-			artifact, err := k.GetArtifact(full_url, build_id, currUser)
+			upstreamArtifact := &kache.Artifact{}
+			
+			upstreamRequest, err := generateUpstreamRequest(r)
 			if err != nil {
-				var upstream_artifact kache.Artifact
-				response, err := relayRequest(r, httpClient)
-				if err != nil {
-					log.Printf("Failed to relay request to upstream: %s", err)
-					http.Error(w,
-						"Error creating proxy request",
-						http.StatusInternalServerError)
-				}
-				_, err = io.Copy(&upstream_artifact, &response.Body)
-				if err != nil {
-					log.Printf("Failed to copy over http response body to kache: %s", err)
-					http.Error(w,
-						"Error creating proxy request",
-						http.StatusInternalServerError)
-				}
-				// TODO: be more efficient?
-				if !upstream_artifact.Equal(artifact) {
-					err = k.AddArtifact(artifact, full_url, build_id, currUser)
-					if err != nil {
-						log.Printf("Failed to add artifact to Kache: %s", err)
-						http.Error(w,
-							"Error creating proxy request",
-							http.StatusInternalServerError)
-					}
-				}
+				log.Printf("Failed to generate an upstream request: %s", err)
+				http.Error(w,
+					"Error creating proxy request",
+					http.StatusInternalServerError)
+			}
+			response, err := relayRequest(upstreamRequest, httpClient)
+			if err != nil {
+				log.Printf("Failed to relay request to upstream: %s", err)
+				http.Error(w,
+					"Error creating proxy request",
+					http.StatusInternalServerError)
+			}
+			n, err := upstreamArtifact.Write(response.Body)
+			if n != len(response.Body) {
+				log.Printf("Failed to copy over http response body to artifact: %s", err)
+				http.Error(w,
+					"Error creating proxy request",
+					http.StatusInternalServerError)
+			}
+
+			err = formatUpstreamResponse(w, response)
+			if err != nil {
+				log.Printf("Failed to format the response from upstream: %s", err)
+				http.Error(w,
+					"Error creating proxy request",
+					http.StatusInternalServerError)
+			}
+			cachedArtifact, err := k.GetArtifact(full_url, BuildTag, currUser)
+			if err == nil  && upstreamArtifact.Equal(cachedArtifact) {  // If artifact already exists, just tag it
+				// Tag the existing one
+				// TODO: fix all the nonstandard names!
+				k.TagArtifact(cachedArtifact, BuildTag, full_url, currUser)
 			} else {
-				response, err := relayRequest(r, httpClient)
-				if err != nil {
-					log.Printf("Failed to send request to upstream: %s", err)
-					http.Error(w,
-						"Error creating proxy request",
-						http.StatusInternalServerError)
-				}
-				_, err = io.Copy(artifact, &response.Body)
+				err = k.AddArtifact(upstreamArtifact, full_url, BuildTag, currUser)
 				if err != nil {
 					log.Printf("Failed to add artifact to Kache: %s", err)
-					http.Error(w,
-						"Error creating proxy request",
-						http.StatusInternalServerError)
-				}
-				err = k.AddArtifact(artifact, full_url, build_id, currUser)
-				if err != nil {
-					log.Printf("Failed to add artifact to Kache: %s", err)
-					http.Error(w,
-						"Error creating proxy request",
-						http.StatusInternalServerError)
-				}
-				err = formatUpstreamResponse(w, response)
-				if err != nil {
-					log.Printf("Failed to format the response from upstream: %s", err)
 					http.Error(w,
 						"Error creating proxy request",
 						http.StatusInternalServerError)
 				}
 			}
+
 		case MODE_P:
-			_, err := k.GetArtifact(full_url, build_id, currUser)
+			cachedArtifact, err := k.GetArtifact(full_url, BuildTag, currUser)
 			if err != nil {
 				log.Printf("Failed to retrieve the requested artifact from Kache. "+
 					"Something went seriously wrong.: %s", err)
 				http.Error(w,
 					"Error creating proxy request",
 					http.StatusInternalServerError)
-			}
-			err = respondWithArtifact(w, r, httpClient)
-			if err != nil {
-				log.Printf("Failed to send kached artifact: %s", err)
-				http.Error(w,
-					"Error creating proxy request",
-					http.StatusInternalServerError)
+			} else {
+				err = respondWithArtifact(w, r, cachedArtifact)
+				if err != nil {
+					log.Printf("Failed to send kached artifact: %s", err)
+					http.Error(w,
+						"Error creating proxy request",
+						http.StatusInternalServerError)
+				}
 			}
 			// err = formatUpstreamResponse(w, response)
 			// if err != nil {
@@ -183,7 +184,8 @@ func main() {
 			log.Fatal("Kache mode is invalid!")
 		}
 	})
-	log.Fatal(http.ListenAndServe(":80", nil))
+	log.Print(s.ListenAndServe())
+	return 
 }
 
 func init_custom_transport() (httpClient *http.Client) {
@@ -245,7 +247,8 @@ func formatUpstreamResponse(dest http.ResponseWriter, src tempResponse) (err err
 	dest.WriteHeader(src.StatusCode)
 
 	// Copy the body of the proxy response to the original response
-	_, err = io.Copy(dest, &src.Body)
+	// TODO: Icky icky icky fixme pwease
+	_, err = io.Copy(dest, bytes.NewBuffer(src.Body))
 	return err
 }
 
@@ -272,10 +275,28 @@ func relayRequest(proxyReq *http.Request, httpClient clientSender) (response tem
 	response.StatusCode = resp.StatusCode
 
 	// Copy the body of the proxy response to the original response
-	_, err = io.Copy(&response.Body, resp.Body)
+	body, err := io.ReadAll(resp.Body)
+	response.Body = body
 	return response, err
 }
 
-func respondWithArtifact(w http.ResponseWriter, r *http.Request, httpClient *http.Client) (err error) {
+func respondWithArtifact(w http.ResponseWriter, r *http.Request, artifact *kache.Artifact) (err error) {
+	// Copy the headers from the proxy response to the original response
+	// for name, values := range src.Header {
+	// 	for _, value := range values {
+	// 		dest.Header().Add(name, value)
+	// 	}
+	// }
+
+	w.Header().Add("Content-Length", fmt.Sprint(len(artifact.Data)))
+	// w.Header().Add("Content
+	
+
+	// Set the status code of the original response to the status code of the proxy response
+	w.WriteHeader(200)
+
+	// Copy the body of the proxy response to the original response
+	// TODO: Icky icky icky fixme pwease
+	_, err = io.Copy(w, bytes.NewBuffer(artifact.Data))
 	return err
 }
