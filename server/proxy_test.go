@@ -54,11 +54,11 @@ func doKacheRequest(method string, URL string, client *http.Client) (_ string, _
 func TestProxyRecordAndPlayback(t *testing.T) {
 
 	httpClient := http.DefaultClient
-	serverReady := make(chan func()(err error))
+	serverReady := make(chan func() (err error))
 
-	aOriginal :=  "this is the /root/a file"   
-	bOriginal :=  "this is the /root/b file"   
-	cOriginal :=  "this is the /root/c file"
+	aOriginal := "this is the /root/a file"
+	bOriginal := "this is the /root/b file"
+	cOriginal := "this is the /root/c file"
 
 	aUpdated := "Updated /root/a file"
 	bUpdated := "Updated /root/b file"
@@ -85,7 +85,7 @@ func TestProxyRecordAndPlayback(t *testing.T) {
 		server.Handler = http.FileServerFS(memoryFS)
 		// Signal that server is open for business.
 		serverReady <- server.Close
-		
+
 		server.Serve(l) // Do not care if it fails...
 		fmt.Println("Shutting down fileserver")
 	}()
@@ -156,13 +156,12 @@ func TestProxyRecordAndPlayback(t *testing.T) {
 		}
 	})
 
-	
 	t.Run(fmt.Sprintf("PLAYBACK GET http://127.0.0.1:1234/root/c DNE"), func(t *testing.T) {
 		_, statusCode, err := doKacheRequest("GET", "http://127.0.0.1:1234/root/c", httpClient)
 		if err != nil {
 			t.Errorf("Failed to do http request: %s\n", err)
 		}
-		if (statusCode >= 200 && statusCode < 300) {
+		if statusCode >= 200 && statusCode < 300 {
 			t.Errorf("Successfully got artifact that should not be possible. Got code %d", statusCode)
 		}
 	})
@@ -178,7 +177,7 @@ func TestPassthroughProxy(t *testing.T) {
 	ProxyMode = MODE_S
 
 	httpClient := http.DefaultClient
-	serverReady := make(chan func()(err error))
+	serverReady := make(chan func() (err error))
 
 	memoryFS := fstest.MapFS{
 		"root/a": {Data: []byte("this is the /root/a file")},
@@ -201,7 +200,7 @@ func TestPassthroughProxy(t *testing.T) {
 		server.Handler = http.FileServerFS(memoryFS)
 		// Signal that server is open for business.
 		serverReady <- server.Close
-		
+
 		server.Serve(l) // Do not care if it fails...
 		fmt.Println("Shutting down fileserver")
 	}()
@@ -234,8 +233,6 @@ func TestPassthroughProxy(t *testing.T) {
 	killKacheHACK()
 	shutdown()
 }
-
-
 
 // ************************************************************** Unit Tests |
 type DumbClient struct {

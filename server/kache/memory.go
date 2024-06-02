@@ -33,7 +33,7 @@ func (m *Memory) GetArtifact(url string, tagID string, userID uint64) (artifact 
 	return artifact, nil
 }
 
-func (m *Memory) AddArtifact(artifact *Artifact, url string, tagID string, userID uint64) (err error){
+func (m *Memory) AddArtifact(artifact *Artifact, url string, tagID string, userID uint64) (err error) {
 	user := m.Users[userID]
 	if user == nil {
 		return errors.New(fmt.Sprintf("Failed to get user with ID: %d", userID))
@@ -59,11 +59,11 @@ func (m *Memory) AddArtifact(artifact *Artifact, url string, tagID string, userI
 	return nil
 }
 
-func (m *Memory) TagArtifact(artifact *Artifact, tag string, URL string, userID uint64) () {
+func (m *Memory) TagArtifact(artifact *Artifact, tag string, URL string, userID uint64) {
 	m.Users[userID].Tags[tag].Artifacts[URL] = artifact
 }
 
-func CreateMemory() (m *Memory){
+func CreateMemory() (m *Memory) {
 	a := make([]*Artifact, 0)
 	u := make([]*User, 0)
 	m = &Memory{Artifacts: a, Users: u}

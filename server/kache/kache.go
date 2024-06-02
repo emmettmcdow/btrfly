@@ -2,13 +2,13 @@ package kache
 
 import (
 	"bytes"
-    "crypto/md5"
-    "encoding/hex"
+	"crypto/md5"
+	"encoding/hex"
 )
 
 type Artifact struct {
-	Hash   string
-	Data   []byte
+	Hash string
+	Data []byte
 }
 
 type Tag struct {
@@ -17,7 +17,7 @@ type Tag struct {
 }
 
 type User struct {
-	ID uint64
+	ID   uint64
 	Tags map[string]*Tag
 }
 
@@ -41,14 +41,14 @@ func (a *Artifact) Write(p []byte) (n int, err error) {
 	if a.Data == nil {
 		a.Data = make([]byte, n)
 	}
-	
+
 	for i, b := range p {
 		a.Data[i] = b
 	}
 
 	hash := md5.Sum(a.Data)
 	a.Hash = hex.EncodeToString(hash[:])
-	
+
 	return n, err
 }
 
