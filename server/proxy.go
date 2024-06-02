@@ -2,8 +2,8 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"context"
+	"fmt"
 	"github.com/emmettmcdow/kache/server/kache"
 	"io"
 	"log"
@@ -65,7 +65,7 @@ func main() {
 	// TODO: this is temporary for testing
 	k = kache.CreateMemory()
 	k.AddUser(kache.CreateUser())
-	
+
 	var httpClient *http.Client
 	var currUser uint64 = 0
 
@@ -73,8 +73,8 @@ func main() {
 
 	httpClient = init_custom_transport()
 
-    m := http.NewServeMux()
-    s := http.Server{Addr: ":80", Handler: m}
+	m := http.NewServeMux()
+	s := http.Server{Addr: ":80", Handler: m}
 	m.HandleFunc("/shutdown", func(w http.ResponseWriter, r *http.Request) {
 		full_url := r.Host + r.URL.String()
 		log.Printf("Received a %s request to %s", r.Method, full_url)
@@ -88,7 +88,7 @@ func main() {
 		switch ProxyMode {
 		case MODE_R:
 			upstreamArtifact := &kache.Artifact{}
-			
+
 			upstreamRequest, err := generateUpstreamRequest(r)
 			if err != nil {
 				log.Printf("Failed to generate an upstream request: %s", err)
@@ -119,7 +119,7 @@ func main() {
 					http.StatusInternalServerError)
 			}
 			cachedArtifact, err := k.GetArtifact(full_url, BuildTag, currUser)
-			if err == nil  && upstreamArtifact.Equal(cachedArtifact) {  // If artifact already exists, just tag it
+			if err == nil && upstreamArtifact.Equal(cachedArtifact) { // If artifact already exists, just tag it
 				// Tag the existing one
 				// TODO: fix all the nonstandard names!
 				k.TagArtifact(cachedArtifact, BuildTag, full_url, currUser)
@@ -185,7 +185,7 @@ func main() {
 		}
 	})
 	log.Print(s.ListenAndServe())
-	return 
+	return
 }
 
 func init_custom_transport() (httpClient *http.Client) {
@@ -290,7 +290,6 @@ func respondWithArtifact(w http.ResponseWriter, r *http.Request, artifact *kache
 
 	w.Header().Add("Content-Length", fmt.Sprint(len(artifact.Data)))
 	// w.Header().Add("Content
-	
 
 	// Set the status code of the original response to the status code of the proxy response
 	w.WriteHeader(200)
