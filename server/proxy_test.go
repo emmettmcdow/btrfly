@@ -93,7 +93,7 @@ func TestProxyRecordAndPlayback(t *testing.T) {
 	shutdown := <-serverReady
 
 	// Set to record
-	ProxyMode = MODE_R
+	proxyMode = MODE_R
 
 	t.Run(fmt.Sprintf("RECORD GET http://127.0.0.1:1234/root/a ORIGINAL"), func(t *testing.T) {
 		body, statusCode, err := doKacheRequest("GET", "http://127.0.0.1:1234/root/a", httpClient)
@@ -123,7 +123,7 @@ func TestProxyRecordAndPlayback(t *testing.T) {
 	})
 
 	// Set to playback
-	ProxyMode = MODE_P
+	proxyMode = MODE_P
 
 	// Update the filesystem
 	memoryFS["root/a"] = &fstest.MapFile{Data: []byte(aUpdated)}
@@ -174,7 +174,7 @@ func TestProxyRecordAndPlayback(t *testing.T) {
 func TestPassthroughProxy(t *testing.T) {
 
 	// Set to playback
-	ProxyMode = MODE_S
+	proxyMode = MODE_S
 
 	httpClient := http.DefaultClient
 	serverReady := make(chan func() (err error))

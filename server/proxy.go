@@ -9,6 +9,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -43,14 +44,17 @@ Expected Behavior For Each State:
 |
 |---- S - Behave as if there is no proxy or kaching. Just passthrough
 */
-type proxy_mode uint8
+type ProxyMode uint8
 
-const MODE_R proxy_mode = 0
-const MODE_P proxy_mode = 1
-const MODE_S proxy_mode = 2
+const (
+	MODE_R ProxyMode = iota
+	MODE_P
+	MODE_S
+)
 
-var ProxyMode = MODE_S
-var BuildTag = "shoop da woop"
+var proxyMode = MODE_S
+var buildTag = "shoop da woop"
+var currUser uint64 = 0
 
 // TODO: optimize the buffer, switch to byte slice
 type tempResponse struct {
@@ -67,7 +71,6 @@ func main() {
 	k.AddUser(kache.CreateUser())
 
 	var httpClient *http.Client
-	var currUser uint64 = 0
 
 	log.Print("Starting Kache...")
 
@@ -85,7 +88,7 @@ func main() {
 		full_url := r.Host + r.URL.String()
 		log.Printf("Received a %s request to %s", r.Method, full_url)
 		// TODO: use the conditional get
-		switch ProxyMode {
+		switch proxyMode {
 		case MODE_R:
 			upstreamArtifact := &kache.Artifact{}
 
@@ -118,13 +121,13 @@ func main() {
 					"Error creating proxy request",
 					http.StatusInternalServerError)
 			}
-			cachedArtifact, err := k.GetArtifact(full_url, BuildTag, currUser)
+			cachedArtifact, err := k.GetArtifact(full_url, buildTag, currUser)
 			if err == nil && upstreamArtifact.Equal(cachedArtifact) { // If artifact already exists, just tag it
 				// Tag the existing one
 				// TODO: fix all the nonstandard names!
-				k.TagArtifact(cachedArtifact, BuildTag, full_url, currUser)
+				k.TagArtifact(cachedArtifact, buildTag, full_url, currUser)
 			} else {
-				err = k.AddArtifact(upstreamArtifact, full_url, BuildTag, currUser)
+				err = k.AddArtifact(upstreamArtifact, full_url, buildTag, currUser)
 				if err != nil {
 					log.Printf("Failed to add artifact to Kache: %s", err)
 					http.Error(w,
@@ -134,7 +137,7 @@ func main() {
 			}
 
 		case MODE_P:
-			cachedArtifact, err := k.GetArtifact(full_url, BuildTag, currUser)
+			cachedArtifact, err := k.GetArtifact(full_url, buildTag, currUser)
 			if err != nil {
 				log.Printf("Failed to retrieve the requested artifact from Kache. "+
 					"Something went seriously wrong.: %s", err)
@@ -150,13 +153,6 @@ func main() {
 						http.StatusInternalServerError)
 				}
 			}
-			// err = formatUpstreamResponse(w, response)
-			// if err != nil {
-			// 	log.Printf("Failed to format the response from upstream: %s", err)
-			// 	http.Error(response,
-			// 		"Error creating proxy request",
-			// 		http.StatusInternalServerError)
-			// }
 		case MODE_S:
 			upstreamRequest, err := generateUpstreamRequest(r)
 			if err != nil {
@@ -186,6 +182,32 @@ func main() {
 	})
 	log.Print(s.ListenAndServe())
 	return
+}
+
+func Login(ID string) (err error) {
+	m, err := strconv.ParseUint(ID, 10, 64)
+	if err != nil {
+		return fmt.Errorf("Failed to convert ID %s to integer: %s", ID, err)
+	}
+	currUser = m
+	return nil
+}
+
+func Tag(tag string) (err error) {
+	buildTag = tag
+	return nil
+}
+
+func Mode(mode string) (err error) {
+	m, err := strconv.ParseUint(mode, 10, 8)
+	if err != nil {
+		return fmt.Errorf("Failed to convert mode %s to integer: %s", mode, err)
+	}
+	if m < 0 || m > 2 {
+		return fmt.Errorf("Invalid error mode %d", m)
+	}
+	proxyMode = ProxyMode(m)
+	return nil
 }
 
 func init_custom_transport() (httpClient *http.Client) {
@@ -281,15 +303,7 @@ func relayRequest(proxyReq *http.Request, httpClient clientSender) (response tem
 }
 
 func respondWithArtifact(w http.ResponseWriter, r *http.Request, artifact *kache.Artifact) (err error) {
-	// Copy the headers from the proxy response to the original response
-	// for name, values := range src.Header {
-	// 	for _, value := range values {
-	// 		dest.Header().Add(name, value)
-	// 	}
-	// }
-
 	w.Header().Add("Content-Length", fmt.Sprint(len(artifact.Data)))
-	// w.Header().Add("Content
 
 	// Set the status code of the original response to the status code of the proxy response
 	w.WriteHeader(200)
