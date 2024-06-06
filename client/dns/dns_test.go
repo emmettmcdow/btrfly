@@ -18,25 +18,27 @@ import (
 // https://superuser.com/questions/698244/ip-address-that-is-the-equivalent-of-dev-null
 const BLACKHOLE_IP = "240.0.0.0"
 
+var d DNSConfig = ConfigAgent()
+
 type callback_t func() error
 
-func MacDnsLookupHelper(t *testing.T, callback callback_t) {
+func DNSLookupHelper(t *testing.T, callback callback_t) {
 	// Should pass
 	err := callback()
 	if err != nil {
 		t.Error("Failed to lookup DNS. System is not properly configured")
 	}
 
-	MacDNSConfig(BLACKHOLE_IP)
+	d.Config(BLACKHOLE_IP)
 	// Should fail
 	err = callback()
 	if err == nil {
-		MacDNSDeconfig()
+		d.Deconfig()
 		t.Error("Successfully looked up the IP, meaning MacDNSConfig failed.")
 	}
 
-	MacDNSDeconfig()
-	MacDNSFlushCache()
+	d.Deconfig()
+	d.FlushCache()
 	// Should pass
 	err = callback()
 	if err != nil {
@@ -45,19 +47,19 @@ func MacDnsLookupHelper(t *testing.T, callback callback_t) {
 	}
 }
 
-func TestMacDnsGolangDNS(t *testing.T) {
+func TestGolangDNS(t *testing.T) {
 	if runtime.GOOS != "darwin" {
 		t.Skip("Platform is not darwin")
 	}
-	MacDnsLookupHelper(t, func() (err error) {
+	DNSLookupHelper(t, func() (err error) {
 		_, err = net.LookupIP("google.com")
 		return err
 	})
 }
 
-func TestMacDnsNslookup(t *testing.T) {
+func TestDNSNslookup(t *testing.T) {
 	if runtime.GOOS != "darwin" {
-		MacDNSFlushCache()
+		d.FlushCache()
 		t.Skip("Platform is not darwin")
 	}
 	_, err := exec.LookPath("nslookup")
@@ -65,14 +67,14 @@ func TestMacDnsNslookup(t *testing.T) {
 		t.Skip("nslookup not installed on system")
 	}
 
-	MacDnsLookupHelper(t, func() (err error) {
+	DNSLookupHelper(t, func() (err error) {
 		cmd := exec.Command("nslookup", "google.com")
 		err = cmd.Run()
 		return err
 	})
 }
 
-func TestMacDnsDig(t *testing.T) {
+func TestDNSDig(t *testing.T) {
 	if runtime.GOOS != "darwin" {
 		t.Skip("Platform is not darwin")
 	}
@@ -81,14 +83,14 @@ func TestMacDnsDig(t *testing.T) {
 		t.Skip("dig not installed on system")
 	}
 
-	MacDnsLookupHelper(t, func() (err error) {
+	DNSLookupHelper(t, func() (err error) {
 		cmd := exec.Command("dig", "google.com")
 		err = cmd.Run()
 		return err
 	})
 }
 
-func TestMacDnsCurl(t *testing.T) {
+func TestDNSCurl(t *testing.T) {
 	if runtime.GOOS != "darwin" {
 		t.Skip("Platform is not darwin")
 	}
@@ -97,7 +99,7 @@ func TestMacDnsCurl(t *testing.T) {
 		t.Skip("curl not installed on system")
 	}
 
-	MacDnsLookupHelper(t, func() (err error) {
+	DNSLookupHelper(t, func() (err error) {
 		cmd := exec.Command("curl", "google.com")
 		err = cmd.Run()
 		return err
