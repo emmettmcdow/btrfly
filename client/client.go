@@ -82,6 +82,45 @@ func main() {
 			fmt.Fprintf(os.Stderr, "Failed to set mode: %s\n\n", err)
 			os.Exit(1)
 		}
+	case "help":
+		if arglen != 1 {
+			// TODO print default message
+			fmt.Fprintf(os.Stderr, "No mode given.\n")
+			os.Exit(1)
+		}
+		// TODO: format better
+		// TODO: figure out standard unix format for specifying commandlines
+		switch flag.Args()[1]{
+		case "config":
+			fmt.Printf("Help: kache config [dns server]\n")
+			fmt.Printf("    config - configure this machine to utilize the Kache server\n")
+			fmt.Printf("    Takes an optional argument [dns server]. This overrides the default dns\n")
+			fmt.Printf("    server\n")
+		case "deconfigure":
+			fmt.Printf("Help: kache deconfigure\n")
+			fmt.Printf("    deconfigure - unsets the dns server set by config\n")
+		case "tag":
+			fmt.Printf("Help: kache tag <tag_name>")
+			fmt.Printf("    tag - set the tag to identify this current build\n")
+			fmt.Printf("    tag_name is required and passed as an argument\n")
+		case "mode":
+			fmt.Printf("Help: kache mode <mode_verb>")
+			fmt.Printf("    mode - change the mode of operation of the kache service\n")
+			fmt.Printf("    mode_verb is required and passed as an argument\n")
+			fmt.Printf("    mode_verb is one of: record, playback, standby\n")
+		case "login":
+			fmt.Printf("Help: kache login <id>")
+			fmt.Printf("    login - set your credentials so that you can use the Kache service\n")
+			fmt.Printf("    id is required and passed as an argument\n")
+		}
+	default:
+		fmt.Printf("%s is not a valid subcommand", os.Args[1])
+		fmt.Printf("Available subcommands:\n")
+		fmt.Printf("    deconfigure - deconfigure this machine (...)\n")
+		fmt.Printf("    tag         - set the tag to identify this current build\n")
+		fmt.Printf("    login       - set your credentials so that you can use the Kache service\n")
+		fmt.Printf("    mode        - change the mode of operation of the kache service\n")
+		fmt.Printf("    help        - pass another subcommand to get info about that subcommand\n")
 	}
 }
 
