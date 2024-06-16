@@ -48,8 +48,8 @@ func DNSLookupHelper(t *testing.T, callback callback_t) {
 }
 
 func TestGolangDNS(t *testing.T) {
-	if runtime.GOOS != "darwin" {
-		t.Skip("Platform is not darwin")
+	if runtime.GOOS != "darwin" && runtime.GOOS != "linux" {
+		t.Skip("Platform is not supported")
 	}
 	DNSLookupHelper(t, func() (err error) {
 		_, err = net.LookupIP("google.com")
@@ -58,9 +58,9 @@ func TestGolangDNS(t *testing.T) {
 }
 
 func TestDNSNslookup(t *testing.T) {
-	if runtime.GOOS != "darwin" {
+	if runtime.GOOS != "darwin" && runtime.GOOS != "linux" {
 		d.FlushCache()
-		t.Skip("Platform is not darwin")
+		t.Skip("Platform is not supported")
 	}
 	_, err := exec.LookPath("nslookup")
 	if err != nil {
@@ -75,7 +75,7 @@ func TestDNSNslookup(t *testing.T) {
 }
 
 func TestDNSDig(t *testing.T) {
-	if runtime.GOOS != "darwin" {
+	if runtime.GOOS != "darwin" && runtime.GOOS != "linux" {
 		t.Skip("Platform is not darwin")
 	}
 	_, err := exec.LookPath("dig")
@@ -91,8 +91,8 @@ func TestDNSDig(t *testing.T) {
 }
 
 func TestDNSCurl(t *testing.T) {
-	if runtime.GOOS != "darwin" {
-		t.Skip("Platform is not darwin")
+	if runtime.GOOS != "darwin" && runtime.GOOS != "linux" {
+		t.Skip("Platform is not supported")
 	}
 	_, err := exec.LookPath("curl")
 	if err != nil {
