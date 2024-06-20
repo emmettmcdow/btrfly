@@ -11,7 +11,6 @@ import (
 )
 
 var client *http.Client
-var d dns.DNSConfig
 var ctrlEndpoint string
 var proxyEndpoint string
 
@@ -41,15 +40,15 @@ func main() {
 			fmt.Fprintf(os.Stderr, "Unrecognized arguments.\n")
 			os.Exit(1)
 		}
-		d.Config(dnsEndpoint)
-		d.FlushCache()
+		dns.Config(dnsEndpoint)
+		dns.FlushCache()
 	case "deconfig":
 		if arglen != 1 {
 			fmt.Fprintf(os.Stderr, "Unrecognized arguments.\n")
 			os.Exit(1)
 		}
-		d.Deconfig()
-		d.FlushCache()
+		dns.Deconfig()
+		dns.FlushCache()
 	case "tag":
 		if arglen != 2 {
 			fmt.Fprintf(os.Stderr, "No tag given.\n")

@@ -18,32 +18,30 @@ import (
 // https://superuser.com/questions/698244/ip-address-that-is-the-equivalent-of-dev-null
 const BLACKHOLE_IP = "240.0.0.0"
 
-var d DNSConfig = ConfigAgent()
-
 type callback_t func() error
 
 func DNSLookupHelper(t *testing.T, callback callback_t) {
 	// Should pass
 	err := callback()
 	if err != nil {
-		t.Error("Failed to lookup DNS. System is not properly configured")
+		t.Error("Failed to lookup  System is not properly configured")
 	}
 
-	d.Config(BLACKHOLE_IP)
+	Config(BLACKHOLE_IP)
 	// Should fail
 	err = callback()
 	if err == nil {
-		d.Deconfig()
-		t.Error("Successfully looked up the IP, meaning MacDNSConfig failed.")
+		Deconfig()
+		t.Error("Successfully looked up the IP, meaning dns.Config failed.")
 	}
 
-	d.Deconfig()
-	d.FlushCache()
+	Deconfig()
+	FlushCache()
 	// Should pass
 	err = callback()
 	if err != nil {
 		t.Error("Failed to look up the IP. You should see about fixing the " +
-			"configuration manually because MacDNSDeconfig is wildin'.")
+			"configuration manually because dns.Deconfig is wildin'.")
 	}
 }
 
