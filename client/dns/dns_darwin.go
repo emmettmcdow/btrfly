@@ -6,9 +6,7 @@ import (
 	"strings"
 )
 
-type MacDNS struct{}
-
-func (m MacDNS) Config(ip string) (err error) {
+func Config(ip string) (err error) {
 	var interfaces = macGetAllNetworkServices()
 
 	for _, interface_name := range interfaces {
@@ -19,7 +17,7 @@ func (m MacDNS) Config(ip string) (err error) {
 	return nil
 }
 
-func (m MacDNS) Deconfig() (err error) {
+func Deconfig() (err error) {
 	var interfaces = macGetAllNetworkServices()
 
 	for _, interface_name := range interfaces {
@@ -30,7 +28,7 @@ func (m MacDNS) Deconfig() (err error) {
 	return nil
 }
 
-func (m MacDNS) FlushCache() (err error) {
+func FlushCache() (err error) {
 	var cmd = exec.Command("dscacheutil", "-flushcache")
 	var out strings.Builder
 	var stderr strings.Builder

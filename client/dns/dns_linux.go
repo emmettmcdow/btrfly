@@ -9,9 +9,7 @@ import (
 // TODO: find some way to test this... won't work in a Docker container as it is
 const TMPFILE string = "/tmp/resolv.conf"
 
-type LinuxDNS struct{}
-
-func (m LinuxDNS) Config(ip string) (err error) {
+func Config(ip string) (err error) {
 	// TODO: don't do this with bash lmao
 	var cmd1 = exec.Command("/bin/sh", "-c", fmt.Sprintf("echo 'nameserver %s' | sudo tee /etc/resolv-manual.conf", ip))
 	var cmd2 = exec.Command("/bin/sh", "-c", fmt.Sprintf("sudo mv /etc/resolv.conf %s", TMPFILE))
@@ -41,7 +39,7 @@ func (m LinuxDNS) Config(ip string) (err error) {
 	return nil
 }
 
-func (m LinuxDNS) Deconfig() (err error) {
+func Deconfig() (err error) {
 	// TODO: don't do this with bash lmao
 	var cmd1 = exec.Command("/bin/sh", "-c", fmt.Sprintf("mv %s /etc/resolv.conf", TMPFILE))
 	var cmd2 = exec.Command("/bin/sh", "-c", "rm /etc/resolv-manual.conf")
@@ -64,6 +62,6 @@ func (m LinuxDNS) Deconfig() (err error) {
 	return nil
 }
 
-func (m LinuxDNS) FlushCache() (err error) {
+func FlushCache() (err error) {
 	return nil // TODO: implement cache flushing
 }
