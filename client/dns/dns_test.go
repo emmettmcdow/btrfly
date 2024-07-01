@@ -5,6 +5,7 @@ import (
 	"os/exec"
 	"runtime"
 	"testing"
+	"fmt"
 )
 
 // We only want to test for "Was the DNS configured properly?"
@@ -24,19 +25,32 @@ func DNSLookupHelper(t *testing.T, callback callback_t) {
 	// Should pass
 	err := callback()
 	if err != nil {
-		t.Error("Failed to lookup  System is not properly configured")
+		t.Error("Failed to lookup. System is not properly configured")
 	}
 
-	Config(BLACKHOLE_IP)
+	err = Config(BLACKHOLE_IP)
+	if err != nil {
+		Deconfig()
+		FlushCache()
+		t.Error(fmt.Sprintf("Failed to Configure: %s", err))
+	}
 	// Should fail
 	err = callback()
 	if err == nil {
 		Deconfig()
+		FlushCache()
 		t.Error("Successfully looked up the IP, meaning dns.Config failed.")
 	}
 
-	Deconfig()
-	FlushCache()
+	err = Deconfig()
+	if err != nil {
+		FlushCache()
+		t.Error(fmt.Sprintf("Failed to Deconfigure: %s", err))
+	}
+	err = FlushCache()
+	if err != nil {
+		t.Error(fmt.Sprintf("Failed to FlushCache: %s", err))
+	}
 	// Should pass
 	err = callback()
 	if err != nil {
@@ -57,7 +71,6 @@ func TestGolangDNS(t *testing.T) {
 
 func TestDNSNslookup(t *testing.T) {
 	if runtime.GOOS != "darwin" && runtime.GOOS != "linux" {
-		d.FlushCache()
 		t.Skip("Platform is not supported")
 	}
 	_, err := exec.LookPath("nslookup")
