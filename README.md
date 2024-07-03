@@ -1,4 +1,6 @@
 # Kache - The HTTP Time Machine
+> **NOTE**: This software is currently a WIP. It is nowhere close to stable or usable
+
 This is a tool allows users to record a session of http traffic, then playback
 that session at a later time.
 
