@@ -56,7 +56,6 @@ var proxyMode = MODE_S
 var buildTag = "shoop da woop"
 var currUser uint64 = 0
 
-// TODO: optimize the buffer, switch to byte slice
 type tempResponse struct {
 	StatusCode int
 	Header     http.Header

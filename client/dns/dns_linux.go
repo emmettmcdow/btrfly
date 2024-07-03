@@ -7,6 +7,7 @@ import (
 )
 
 // TODO: find some way to test this... won't work in a Docker container as it is
+// TODO: Figure out why the linux version of the tests are experiencing race conditions aft. config
 const TMPFILE string = "/tmp/resolv.conf"
 
 func Config(ip string) (err error) {
