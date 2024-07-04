@@ -4,6 +4,12 @@
 - Docker
 - A Unix or Linux machine(not strictly necessary but highly recommended)
 
+## Learning GO Resources
+- https://go.dev/tour/welcome/1
+- https://go.dev/doc/code
+- https://go.dev/ref/spec
+- https://go.dev/doc/effective_go
+
 ## Testing
 We want to aim for 90% or higher test coverage. With every piece of code you add, make sure you add
 corresponding unit tests. We don't really care about the distinction between unit/integration tests.
