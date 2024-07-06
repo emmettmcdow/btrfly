@@ -1,12 +1,12 @@
 package dns
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"os/exec"
 	"runtime"
 	"testing"
-	"time"
 )
 
 // We only want to test for "Was the DNS configured properly?"
@@ -77,12 +77,12 @@ func TestGolangDNS(t *testing.T) {
 		t.Skip("Platform is not supported")
 	}
 	DNSLookupHelper(t, func() (err error) {
-		_, err = net.LookupIP("google.com")
 		// This is an unfortunate side effect of the fact that Go checks the /etc/resolv.conf file
 		// once every 5 seconds.
 		// https://github.com/golang/go/blob/ad77cefeb2f5b3f1cef4383e974195ffc8610236/src/net/dnsclient_unix.go#L401
-		// TODO: work around this if you want to make the tests faster
-		time.Sleep(5 * time.Second)
+		// Need to make a new resolver every time in order to refresh
+		resolver := net.Resolver{}
+		_, err = resolver.LookupHost(context.TODO(), "google.com")
 		return err
 	})
 }
