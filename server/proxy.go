@@ -52,6 +52,19 @@ const (
 	MODE_S
 )
 
+func (m ProxyMode) String() string {
+	switch m {
+	case MODE_R:
+		return "Record"
+	case MODE_P:
+		return "Playback"
+	case MODE_S:
+		return "Standby"
+	default:
+		return ""
+	}
+}
+
 var proxyMode = MODE_S
 var buildTag = "shoop da woop"
 var currUser uint64 = 0
@@ -62,7 +75,7 @@ type tempResponse struct {
 	Body       []byte
 }
 
-func main() {
+func proxy() {
 	var k kache.Handler
 
 	// TODO: this is temporary for testing
