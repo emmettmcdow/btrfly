@@ -72,7 +72,7 @@ func TestProxyRecordAndPlayback(t *testing.T) {
 
 	// Kache
 	go func() {
-		main()
+		proxy()
 	}()
 
 	// Upstream Server
@@ -187,7 +187,7 @@ func TestPassthroughProxy(t *testing.T) {
 
 	// Kache
 	go func() {
-		main()
+		proxy()
 	}()
 
 	// Upstream Server
