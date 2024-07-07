@@ -20,7 +20,6 @@ const	defaultDNSEndpoint string =  "127.0.0.1:53"
 func main() {
 	var subcommand string
 	client = &http.Client{}
-	d = dns.ConfigAgent()
 
 	flag.Parse()
 	arglen := len(flag.Args())
