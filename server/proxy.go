@@ -91,12 +91,6 @@ func proxy(wg *sync.WaitGroup, port uint) (s *http.Server) {
 
 	m := http.NewServeMux()
 	s = &http.Server{Addr: fmt.Sprintf(":%d", port), Handler: m}
-	m.HandleFunc("/shutdown", func(w http.ResponseWriter, r *http.Request) {
-		full_url := r.Host + r.URL.String()
-		log.Printf("Received a %s request to %s", r.Method, full_url)
-		http.Error(w, "Shutting down", 400)
-		s.Shutdown(context.Background())
-	})
 	m.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		full_url := r.Host + r.URL.String()
 		log.Printf("Received a %s request to %s", r.Method, full_url)
