@@ -5,36 +5,13 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
-	"os/signal"
 	"sync"
-	"syscall"
 	// "github.com/emmettmcdow/kache/server/proxy"
 )
 
-func main() {
-	wg := &sync.WaitGroup{}
-	wg.Add(1)
-	s := handler(wg, 5678)
-
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
-	go func() {
-		// TODO: figure out this TODO business with the context
-		defer s.Shutdown(context.TODO())
-		for sig := range c {
-			if sig == syscall.SIGINT {
-				log.Println("Recieved keyboard interrupt. Shutting down server.")
-				break
-			}
-		}
-	}()
-
-	wg.Wait()
-}
 
 // TODO: make the controller API actually not shit(comply with REST)
-func handler(wg *sync.WaitGroup, port uint) (s *http.Server) {
+func controller(wg *sync.WaitGroup, port uint) (s *http.Server) {
 	m := http.NewServeMux()
 	s = &http.Server{Addr: fmt.Sprintf(":%d", port), Handler: m}
 	// TODO: remove this ASAP
