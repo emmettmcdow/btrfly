@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+	"sync"
 )
 
 /*
@@ -75,7 +76,7 @@ type tempResponse struct {
 	Body       []byte
 }
 
-func proxy() {
+func proxy(wg *sync.WaitGroup, port uint) (s *http.Server) {
 	var k kache.Handler
 
 	// TODO: this is temporary for testing
@@ -89,7 +90,7 @@ func proxy() {
 	httpClient = init_custom_transport()
 
 	m := http.NewServeMux()
-	s := http.Server{Addr: ":80", Handler: m}
+	s = &http.Server{Addr: fmt.Sprintf(":%d", port), Handler: m}
 	m.HandleFunc("/shutdown", func(w http.ResponseWriter, r *http.Request) {
 		full_url := r.Host + r.URL.String()
 		log.Printf("Received a %s request to %s", r.Method, full_url)
@@ -192,8 +193,14 @@ func proxy() {
 			log.Fatal("Kache mode is invalid!")
 		}
 	})
-	log.Print(s.ListenAndServe())
-	return
+	go func() {
+		defer wg.Done()
+		if err := s.ListenAndServe(); err != http.ErrServerClosed {
+			log.Fatalf("ListenAndServe failed: %s\n", err)
+		}
+	}()
+
+	return s
 }
 
 func Login(ID string) (err error) {
