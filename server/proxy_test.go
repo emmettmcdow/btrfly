@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -12,17 +13,10 @@ import (
 	"strings"
 	"testing"
 	"testing/fstest"
-	"time"
-	// "io/fs"
+	"sync"
 )
 
 // ************************************************************** Integration Tests
-
-func killKacheHACK() {
-	httpClient := http.DefaultClient
-	httpClient.Timeout = (1 * time.Second)
-	_, _, _ = doKacheRequest("GET", "http://127.0.0.1:1234/shutdown", httpClient)
-}
 
 func doKacheRequest(method string, URL string, client *http.Client) (_ string, _ int, err error) {
 
@@ -71,9 +65,11 @@ func TestProxyRecordAndPlayback(t *testing.T) {
 	}
 
 	// Kache
-	go func() {
-		proxy()
-	}()
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+	s := proxy(wg, 80)
+	// TODO: ditch the TODO
+	defer s.Shutdown(context.TODO())
 
 	// Upstream Server
 	go func() {
@@ -89,8 +85,8 @@ func TestProxyRecordAndPlayback(t *testing.T) {
 		server.Serve(l) // Do not care if it fails...
 		fmt.Println("Shutting down fileserver")
 	}()
-
 	shutdown := <-serverReady
+	defer shutdown()
 
 	// Set to record
 	proxyMode = MODE_R
@@ -166,9 +162,6 @@ func TestProxyRecordAndPlayback(t *testing.T) {
 		}
 	})
 
-	killKacheHACK()
-	shutdown()
-
 }
 
 func TestPassthroughProxy(t *testing.T) {
@@ -186,9 +179,12 @@ func TestPassthroughProxy(t *testing.T) {
 	}
 
 	// Kache
-	go func() {
-		proxy()
-	}()
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+	s := proxy(wg, 80)
+	// TODO: ditch the TODO
+	defer s.Shutdown(context.TODO())
+
 
 	// Upstream Server
 	go func() {
@@ -204,8 +200,8 @@ func TestPassthroughProxy(t *testing.T) {
 		server.Serve(l) // Do not care if it fails...
 		fmt.Println("Shutting down fileserver")
 	}()
-
 	shutdown := <-serverReady
+	defer shutdown()
 
 	cases := []struct {
 		Method   string
@@ -230,8 +226,6 @@ func TestPassthroughProxy(t *testing.T) {
 			}
 		})
 	}
-	killKacheHACK()
-	shutdown()
 }
 
 // ************************************************************** Unit Tests |

@@ -34,7 +34,7 @@ func verifyState(wantState state, t *testing.T) {
 	}
 }
 
-func testHandlerMode(t *testing.T) {
+func testControllerMode(t *testing.T) {
 	subtests := []struct {
 		mode    uint8
 		resCode int
@@ -89,7 +89,7 @@ func testHandlerMode(t *testing.T) {
 	}
 }
 
-func testHandlerTag(t *testing.T) {
+func testControllerTag(t *testing.T) {
 	subtests := []struct {
 		tag     string
 		resCode int
@@ -143,7 +143,7 @@ func testHandlerTag(t *testing.T) {
 	}
 }
 
-func testHandlerLogin(t *testing.T) {
+func testControllerLogin(t *testing.T) {
 	subtests := []struct {
 		id      string
 		resCode int
@@ -201,11 +201,11 @@ func testHandlerLogin(t *testing.T) {
 	}
 }
 
-func TestHandler(t *testing.T) {
+func TestController(t *testing.T) {
 	// Start up controller
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
-	s := handler(wg, 5678)
+	s := controller(wg, 5678)
 	// TODO: ditch the TODO
 	defer s.Shutdown(context.TODO())
 
@@ -213,9 +213,9 @@ func TestHandler(t *testing.T) {
 		name    string
 		subtest func(t *testing.T)
 	}{
-		{"login", testHandlerLogin},
-		{"mode", testHandlerMode},
-		{"tag", testHandlerTag},
+		{"login", testControllerLogin},
+		{"mode", testControllerMode},
+		{"tag", testControllerTag},
 	}
 
 	for _, st := range subtests {
