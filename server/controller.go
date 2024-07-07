@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -14,11 +13,6 @@ import (
 func controller(wg *sync.WaitGroup, port uint) (s *http.Server) {
 	m := http.NewServeMux()
 	s = &http.Server{Addr: fmt.Sprintf(":%d", port), Handler: m}
-	// TODO: remove this ASAP
-	m.HandleFunc("/shutdown", func(w http.ResponseWriter, r *http.Request) {
-		http.Error(w, "Shutting down", 400)
-		s.Shutdown(context.Background())
-	})
 	m.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
 		id, ok := r.Header["Id"]
 		if !ok {
