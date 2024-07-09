@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/emmettmcdow/kache/client/dns"
+	"github.com/emmettmcdow/btrfly/client/dns"
 	"io"
 	"net/http"
 	"os"
@@ -103,25 +103,25 @@ func _main(dns DNSConfig, ctrlEndpoint string, arglen int, args []string) int {
 		if arglen == 2 {
 			switch args[1] {
 			case "config":
-				fmt.Printf("Help: kache config [dns_server]\n")
-				fmt.Printf("    config - configure this machine to utilize the Kache server\n")
+				fmt.Printf("Help: btrfly config [dns_server]\n")
+				fmt.Printf("    config - configure this machine to utilize the btrfly server\n")
 				fmt.Printf("    Takes an optional argument [dns server]. This overrides the default dns\n")
 				fmt.Printf("    server\n")
 			case "deconfig":
-				fmt.Printf("Help: kache deconfig\n")
+				fmt.Printf("Help: btrfly deconfig\n")
 				fmt.Printf("    deconfigure - unsets the dns server set by config\n")
 			case "tag":
-				fmt.Printf("Help: kache tag tag_name")
+				fmt.Printf("Help: btrfly tag tag_name")
 				fmt.Printf("    tag - set the tag to identify this current build\n")
 				fmt.Printf("    tag_name is required and passed as an argument\n")
 			case "mode":
-				fmt.Printf("Help: kache mode mode_ver")
-				fmt.Printf("    mode - change the mode of operation of the kache service\n")
+				fmt.Printf("Help: btrfly mode mode_ver")
+				fmt.Printf("    mode - change the mode of operation of the btrfly service\n")
 				fmt.Printf("    mode_verb is required and passed as an argument\n")
 				fmt.Printf("    mode_verb is one of: record, playback, standby\n")
 			case "login":
-				fmt.Printf("Help: kache login id")
-				fmt.Printf("    login - set your credentials so that you can use the Kache service\n")
+				fmt.Printf("Help: btrfly login id")
+				fmt.Printf("    login - set your credentials so that you can use the btrfly service\n")
 				fmt.Printf("    id is required and passed as an argument\n")
 			}
 		} else {
@@ -129,7 +129,7 @@ func _main(dns DNSConfig, ctrlEndpoint string, arglen int, args []string) int {
 			return 0
 		}
 	default:
-		fmt.Printf("%s is not a valid subcommand", subcommand)
+		fmt.Printf("%s is not a valid subcommand\n", subcommand)
 		defaultHelp()
 		return 1
 	}
@@ -137,13 +137,13 @@ func _main(dns DNSConfig, ctrlEndpoint string, arglen int, args []string) int {
 }
 
 func defaultHelp() {
-	fmt.Printf("Kache Client CLI\n")
+	fmt.Printf("btrfly Client CLI\n")
 	fmt.Printf("Available subcommands:\n")
-	fmt.Printf("    config - configure this machine to utilize the Kache server\n")
+	fmt.Printf("    config - configure this machine to utilize the btrfly server\n")
 	fmt.Printf("    deconfigure - deconfigure this machine (...)\n")
 	fmt.Printf("    tag         - set the tag to identify this current build\n")
-	fmt.Printf("    login       - set your credentials so that you can use the Kache service\n")
-	fmt.Printf("    mode        - change the mode of operation of the kache service\n")
+	fmt.Printf("    login       - set your credentials so that you can use the btrfly service\n")
+	fmt.Printf("    mode        - change the mode of operation of the btrfly service\n")
 	fmt.Printf("    help        - pass another subcommand to get info about that subcommand\n")
 }
 

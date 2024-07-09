@@ -1,14 +1,13 @@
 package main
 
 import (
-	"sync"
+	"context"
+	"log"
 	"os"
 	"os/signal"
-	"context"
+	"sync"
 	"syscall"
-	"log"
 )
-
 
 func main() {
 	wg := &sync.WaitGroup{}
@@ -33,4 +32,3 @@ func main() {
 
 	wg.Wait()
 }
-
