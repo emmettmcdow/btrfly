@@ -1,11 +1,11 @@
-package kache
+package btrfly
 
 import (
 	"errors"
 	"fmt"
 )
 
-// Implements kache.Handler
+// Implements btrfly.Handler
 // For testing
 type Memory struct {
 	Artifacts []*Artifact

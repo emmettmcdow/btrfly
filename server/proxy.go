@@ -4,20 +4,20 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/emmettmcdow/kache/server/kache"
+	"github.com/emmettmcdow/btrfly/server/cache"
 	"io"
 	"log"
 	"net"
 	"net/http"
 	"strconv"
-	"time"
 	"sync"
+	"time"
 )
 
 /*
 States:
   - Recording / Playback / Standby   - R/P/S
-  - Kache Present / Not Present      - KP/KN
+  - btrfly Present / Not Present      - KP/KN
   - Upstream Exists / Does Not Exist - UE/UD
   - Upstream New / Old               - UN/UO
 
@@ -27,9 +27,9 @@ Expected Behavior For Each State:
 |---- R
 |     |---- KP
 |     |     |---- UE
-|     |     |     |---- UN - Use Upstream and update Kache artifact
+|     |     |     |---- UN - Use Upstream and update cached artifact
 |     |     |     |
-|     |     |     |---- UO - Use kached
+|     |     |     |---- UO - Use cached
 |     |     |
 |     |     |---- UD - Pass along the upstream 400
 |     |
@@ -77,15 +77,15 @@ type tempResponse struct {
 }
 
 func proxy(wg *sync.WaitGroup, port uint) (s *http.Server) {
-	var k kache.Handler
+	var k btrfly.Handler
 
 	// TODO: this is temporary for testing
-	k = kache.CreateMemory()
-	k.AddUser(kache.CreateUser())
+	k = btrfly.CreateMemory()
+	k.AddUser(btrfly.CreateUser())
 
 	var httpClient *http.Client
 
-	log.Print("Starting Kache...")
+	log.Print("Starting btrfly...")
 
 	httpClient = init_custom_transport()
 
@@ -97,7 +97,7 @@ func proxy(wg *sync.WaitGroup, port uint) (s *http.Server) {
 		// TODO: use the conditional get
 		switch proxyMode {
 		case MODE_R:
-			upstreamArtifact := &kache.Artifact{}
+			upstreamArtifact := &btrfly.Artifact{}
 
 			upstreamRequest, err := generateUpstreamRequest(r)
 			if err != nil {
@@ -136,7 +136,7 @@ func proxy(wg *sync.WaitGroup, port uint) (s *http.Server) {
 			} else {
 				err = k.AddArtifact(upstreamArtifact, full_url, buildTag, currUser)
 				if err != nil {
-					log.Printf("Failed to add artifact to Kache: %s", err)
+					log.Printf("Failed to add artifact to btrfly: %s", err)
 					http.Error(w,
 						"Error creating proxy request",
 						http.StatusInternalServerError)
@@ -146,7 +146,7 @@ func proxy(wg *sync.WaitGroup, port uint) (s *http.Server) {
 		case MODE_P:
 			cachedArtifact, err := k.GetArtifact(full_url, buildTag, currUser)
 			if err != nil {
-				log.Printf("Failed to retrieve the requested artifact from Kache. "+
+				log.Printf("Failed to retrieve the requested artifact from btrfly. "+
 					"Something went seriously wrong.: %s", err)
 				http.Error(w,
 					"Error creating proxy request",
@@ -154,7 +154,7 @@ func proxy(wg *sync.WaitGroup, port uint) (s *http.Server) {
 			} else {
 				err = respondWithArtifact(w, r, cachedArtifact)
 				if err != nil {
-					log.Printf("Failed to send kached artifact: %s", err)
+					log.Printf("Failed to send cached artifact: %s", err)
 					http.Error(w,
 						"Error creating proxy request",
 						http.StatusInternalServerError)
@@ -184,7 +184,7 @@ func proxy(wg *sync.WaitGroup, port uint) (s *http.Server) {
 			}
 
 		default:
-			log.Fatal("Kache mode is invalid!")
+			log.Fatal("btrfly mode is invalid!")
 		}
 	})
 	go func() {
@@ -315,7 +315,7 @@ func relayRequest(proxyReq *http.Request, httpClient clientSender) (response tem
 	return response, err
 }
 
-func respondWithArtifact(w http.ResponseWriter, r *http.Request, artifact *kache.Artifact) (err error) {
+func respondWithArtifact(w http.ResponseWriter, r *http.Request, artifact *btrfly.Artifact) (err error) {
 	w.Header().Add("Content-Length", fmt.Sprint(len(artifact.Data)))
 
 	// Set the status code of the original response to the status code of the proxy response

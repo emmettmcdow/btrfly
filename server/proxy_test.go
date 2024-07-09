@@ -11,20 +11,20 @@ import (
 	"net/url"
 	"reflect"
 	"strings"
+	"sync"
 	"testing"
 	"testing/fstest"
-	"sync"
 )
 
 // ************************************************************** Integration Tests
 
-func doKacheRequest(method string, URL string, client *http.Client) (_ string, _ int, err error) {
+func doBtrflyRequest(method string, URL string, client *http.Client) (_ string, _ int, err error) {
 
 	req, err := http.NewRequest(method, URL, http.NoBody)
 	if err != nil {
 		return "", 0, fmt.Errorf("Failed to make new req: %s\n", err)
 	}
-	// Doing the part of the Kache client here - Redirecting to proxy
+	// Doing the part of the btrfly client here - Redirecting to proxy
 	newURL, err := url.Parse(strings.ReplaceAll(URL, "1234", "80"))
 	if err != nil {
 		return "", 0, fmt.Errorf("Failed to redirect req: %s\n", err)
@@ -64,7 +64,7 @@ func TestProxyRecordAndPlayback(t *testing.T) {
 		"root/c": {Data: []byte(cOriginal)},
 	}
 
-	// Kache
+	// btrfly
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
 	s := proxy(wg, 80)
@@ -92,7 +92,7 @@ func TestProxyRecordAndPlayback(t *testing.T) {
 	proxyMode = MODE_R
 
 	t.Run(fmt.Sprintf("RECORD GET http://127.0.0.1:1234/root/a ORIGINAL"), func(t *testing.T) {
-		body, statusCode, err := doKacheRequest("GET", "http://127.0.0.1:1234/root/a", httpClient)
+		body, statusCode, err := doBtrflyRequest("GET", "http://127.0.0.1:1234/root/a", httpClient)
 		if err != nil {
 			t.Errorf("Failed to do http request: %s\n", err)
 		}
@@ -106,7 +106,7 @@ func TestProxyRecordAndPlayback(t *testing.T) {
 
 	t.Run(fmt.Sprintf("RECORD GET http://127.0.0.1:1234/root/b ORIGINAL"), func(t *testing.T) {
 		// TODO: what should be done if a user downloads the same resource twice in one build?
-		body, statusCode, err := doKacheRequest("GET", "http://127.0.0.1:1234/root/b", httpClient)
+		body, statusCode, err := doBtrflyRequest("GET", "http://127.0.0.1:1234/root/b", httpClient)
 		if err != nil {
 			t.Errorf("Failed to do http request: %s\n", err)
 		}
@@ -126,7 +126,7 @@ func TestProxyRecordAndPlayback(t *testing.T) {
 	memoryFS["root/b"] = &fstest.MapFile{Data: []byte(bUpdated)}
 
 	t.Run(fmt.Sprintf("PLAYBACK GET http://127.0.0.1:1234/root/a UPDATED"), func(t *testing.T) {
-		body, statusCode, err := doKacheRequest("GET", "http://127.0.0.1:1234/root/a", httpClient)
+		body, statusCode, err := doBtrflyRequest("GET", "http://127.0.0.1:1234/root/a", httpClient)
 		if err != nil {
 			t.Errorf("Failed to do http request: %s\n", err)
 		}
@@ -140,7 +140,7 @@ func TestProxyRecordAndPlayback(t *testing.T) {
 
 	t.Run(fmt.Sprintf("PLAYBACK GET http://127.0.0.1:1234/root/b UPDATED"), func(t *testing.T) {
 		// TODO: what should be done if a user downloads the same resource twice in one build?
-		body, statusCode, err := doKacheRequest("GET", "http://127.0.0.1:1234/root/b", httpClient)
+		body, statusCode, err := doBtrflyRequest("GET", "http://127.0.0.1:1234/root/b", httpClient)
 		if err != nil {
 			t.Errorf("Failed to do http request: %s\n", err)
 		}
@@ -153,7 +153,7 @@ func TestProxyRecordAndPlayback(t *testing.T) {
 	})
 
 	t.Run(fmt.Sprintf("PLAYBACK GET http://127.0.0.1:1234/root/c DNE"), func(t *testing.T) {
-		_, statusCode, err := doKacheRequest("GET", "http://127.0.0.1:1234/root/c", httpClient)
+		_, statusCode, err := doBtrflyRequest("GET", "http://127.0.0.1:1234/root/c", httpClient)
 		if err != nil {
 			t.Errorf("Failed to do http request: %s\n", err)
 		}
@@ -178,13 +178,12 @@ func TestPassthroughProxy(t *testing.T) {
 		"root/c": {Data: []byte("this is the /root/c file")},
 	}
 
-	// Kache
+	// btrfly
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
 	s := proxy(wg, 80)
 	// TODO: ditch the TODO
 	defer s.Shutdown(context.TODO())
-
 
 	// Upstream Server
 	go func() {
@@ -217,7 +216,7 @@ func TestPassthroughProxy(t *testing.T) {
 	}
 	for _, tc := range cases {
 		t.Run(fmt.Sprintf("%s %s - %d", tc.Method, tc.Url, tc.Response.ResponseCode), func(t *testing.T) {
-			_, statusCode, err := doKacheRequest(tc.Method, tc.Url, httpClient)
+			_, statusCode, err := doBtrflyRequest(tc.Method, tc.Url, httpClient)
 			if err != nil {
 				t.Errorf("Failed to do http request: %s\n", err)
 			}

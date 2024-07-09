@@ -5,9 +5,8 @@ import (
 	"log"
 	"net/http"
 	"sync"
-	// "github.com/emmettmcdow/kache/server/proxy"
+	// "github.com/emmettmcdow/btrfly/server/proxy"
 )
-
 
 // TODO: make the controller API actually not shit(comply with REST)
 func controller(wg *sync.WaitGroup, port uint) (s *http.Server) {
