@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"fmt"
 	"log"
 	"net/http"
@@ -9,9 +10,18 @@ import (
 )
 
 // TODO: make the controller API actually not shit(comply with REST)
-func controller(wg *sync.WaitGroup, port uint) (s *http.Server) {
+func controller(wg *sync.WaitGroup, port uint, tlsEnabled bool) (s *http.Server) {
+	var config *tls.Config
+
 	m := http.NewServeMux()
-	s = &http.Server{Addr: fmt.Sprintf(":%d", port), Handler: m}
+	if tlsEnabled {
+		cert, err := tls.LoadX509KeyPair("server.pem", "server.key")
+		if err != nil {
+			fmt.Printf("Failed to load certificate keypair: %s\n", err)
+		}
+		config = &tls.Config{Certificates: []tls.Certificate{cert}}
+	}
+	s = &http.Server{Addr: fmt.Sprintf(":%d", port), Handler: m, TLSConfig: config}
 	m.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
 		id, ok := r.Header["Id"]
 		if !ok {
