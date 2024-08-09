@@ -12,7 +12,7 @@ import (
 func main() {
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
-	controllerServer := controller(wg, 5678)
+	controllerServer := controller(wg, 5678, true)
 	wg.Add(1)
 	proxyServer := proxy(wg, 1234)
 
