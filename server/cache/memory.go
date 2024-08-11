@@ -1,7 +1,6 @@
-package btrfly
+package cache
 
 import (
-	"errors"
 	"fmt"
 )
 

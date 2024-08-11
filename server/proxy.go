@@ -78,12 +78,12 @@ type tempResponse struct {
 }
 
 func proxy(wg *sync.WaitGroup, port uint, tlsEnabled bool) (s *http.Server) {
-	var k btrfly.Handler
+	var k cache.Handler
 	var config *tls.Config
 
 	// TODO: this is temporary for testing
-	k = btrfly.CreateMemory()
-	k.AddUser(btrfly.CreateUser())
+	k = cache.CreateMemory()
+	k.AddUser(cache.CreateUser())
 
 	var httpClient *http.Client
 
