@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
 	"fmt"
 	"github.com/emmettmcdow/btrfly/server/cache"
 	"io"
@@ -76,8 +77,9 @@ type tempResponse struct {
 	Body       []byte
 }
 
-func proxy(wg *sync.WaitGroup, port uint) (s *http.Server) {
+func proxy(wg *sync.WaitGroup, port uint, tlsEnabled bool) (s *http.Server) {
 	var k btrfly.Handler
+	var config *tls.Config
 
 	// TODO: this is temporary for testing
 	k = btrfly.CreateMemory()
@@ -90,7 +92,14 @@ func proxy(wg *sync.WaitGroup, port uint) (s *http.Server) {
 	httpClient = init_custom_transport()
 
 	m := http.NewServeMux()
-	s = &http.Server{Addr: fmt.Sprintf(":%d", port), Handler: m}
+	if tlsEnabled {
+		cert, err := tls.LoadX509KeyPair("server.pem", "server.key")
+		if err != nil {
+			fmt.Printf("Failed to load certificate keypair: %s\n", err)
+		}
+		config = &tls.Config{Certificates: []tls.Certificate{cert}}
+	}
+	s = &http.Server{Addr: fmt.Sprintf(":%d", port), Handler: m, TLSConfig: config}
 	m.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		full_url := r.Host + r.URL.String()
 		log.Printf("Received a %s request to %s", r.Method, full_url)
