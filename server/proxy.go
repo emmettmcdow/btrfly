@@ -106,7 +106,7 @@ func proxy(wg *sync.WaitGroup, port uint, tlsEnabled bool) (s *http.Server) {
 		// TODO: use the conditional get
 		switch proxyMode {
 		case MODE_R:
-			upstreamArtifact := &btrfly.Artifact{}
+			upstreamArtifact := &cache.Artifact{}
 
 			upstreamRequest, err := generateUpstreamRequest(r)
 			if err != nil {
@@ -324,7 +324,7 @@ func relayRequest(proxyReq *http.Request, httpClient clientSender) (response tem
 	return response, err
 }
 
-func respondWithArtifact(w http.ResponseWriter, r *http.Request, artifact *btrfly.Artifact) (err error) {
+func respondWithArtifact(w http.ResponseWriter, r *http.Request, artifact *cache.Artifact) (err error) {
 	w.Header().Add("Content-Length", fmt.Sprint(len(artifact.Data)))
 
 	// Set the status code of the original response to the status code of the proxy response
