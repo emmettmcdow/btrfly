@@ -13,7 +13,7 @@ var client *http.Client
 var ctrlEndpoint string
 var proxyEndpoint string
 
-const defaultCtrlEndpoint string = "127.0.0.1:81"
+const defaultCtrlEndpoint string = "127.0.0.1:5678"
 const defaultDNSEndpoint string = "127.0.0.1"
 
 type defaultDns struct{}
