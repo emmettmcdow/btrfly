@@ -116,3 +116,13 @@ func TestDeserialize(t *testing.T) {
 	}
 	return
 }
+
+func TestPacking(t *testing.T) {
+	for a := uint16(0); a < uint16(1<<16-1); a += 1 {
+		b := packed(unpacked(a))
+		if a != b {
+			t.Errorf("Failed to pack(unpack(0x%04x))\n Got: 0x%04x\n", a, b)
+			break
+		}
+	}
+}
