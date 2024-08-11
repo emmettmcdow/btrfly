@@ -83,7 +83,12 @@ func TestClient(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
 	controllerServer := fakeController(wg, talkback, 81)
-	defer controllerServer.Shutdown(context.TODO())
+	defer func() {
+		err := controllerServer.Shutdown(context.TODO())
+		if err != nil {
+			t.Errorf("Failed to shutdown with error: %s\n", err)
+		}
+	}()
 
 	subtests := []struct {
 		command   []string

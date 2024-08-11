@@ -71,7 +71,6 @@ func TestSerialize(t *testing.T) {
 			}
 		})
 	}
-	return
 }
 
 func TestDeserialize(t *testing.T) {
@@ -114,7 +113,6 @@ func TestDeserialize(t *testing.T) {
 			}
 		})
 	}
-	return
 }
 
 func TestPacking(t *testing.T) {

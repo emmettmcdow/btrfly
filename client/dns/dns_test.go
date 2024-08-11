@@ -34,12 +34,12 @@ func DNSLookupHelper(t *testing.T, callback callback_t) {
 	if err != nil {
 		Deconfig()
 		FlushCache()
-		t.Error(fmt.Sprintf("Failed to Configure: %s", err))
+		t.Errorf("Failed to Configure: %s", err)
 		return
 	}
 	err = FlushCache()
 	if err != nil {
-		t.Error(fmt.Sprintf("Failed to FlushCache: %s", err))
+		t.Error("Failed to FlushCache: %s", err)
 		return
 	}
 
@@ -55,7 +55,7 @@ func DNSLookupHelper(t *testing.T, callback callback_t) {
 	err = Deconfig()
 	if err != nil {
 		FlushCache()
-		t.Error(fmt.Sprintf("Failed to Deconfigure: %s", err))
+		t.Error("Failed to Deconfigure: %s", err)
 		return
 	}
 	err = FlushCache()

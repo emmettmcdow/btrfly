@@ -42,9 +42,7 @@ func (a *Artifact) Write(p []byte) (n int, err error) {
 		a.Data = make([]byte, n)
 	}
 
-	for i, b := range p {
-		a.Data[i] = b
-	}
+	copy(a.Data, p)
 
 	hash := md5.Sum(a.Data)
 	a.Hash = hex.EncodeToString(hash[:])
@@ -54,8 +52,7 @@ func (a *Artifact) Write(p []byte) (n int, err error) {
 
 func CreateUser() (user *User) {
 	// TODO: for now we only have an id of 0
-	var id uint64
-	id = 0
+	id := uint64(0)
 	tags := make(map[string]*Tag)
 
 	user = &User{ID: id, Tags: tags}

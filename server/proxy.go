@@ -225,7 +225,7 @@ func Mode(mode string) (err error) {
 	if err != nil {
 		return fmt.Errorf("Failed to convert mode %s to integer: %s", mode, err)
 	}
-	if m < 0 || m > 2 {
+	if m > 2 {
 		return fmt.Errorf("Invalid error mode %d", m)
 	}
 	proxyMode = ProxyMode(m)
