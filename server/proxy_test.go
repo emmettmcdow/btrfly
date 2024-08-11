@@ -67,7 +67,7 @@ func TestProxyRecordAndPlayback(t *testing.T) {
 	// btrfly
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
-	s := proxy(wg, 80)
+	s := proxy(wg, 80, false)
 	// TODO: ditch the TODO
 	defer s.Shutdown(context.TODO())
 
@@ -181,7 +181,7 @@ func TestPassthroughProxy(t *testing.T) {
 	// btrfly
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
-	s := proxy(wg, 80)
+	s := proxy(wg, 80, false)
 	// TODO: ditch the TODO
 	defer s.Shutdown(context.TODO())
 
