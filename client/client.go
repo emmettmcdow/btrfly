@@ -14,7 +14,7 @@ var ctrlEndpoint string
 var proxyEndpoint string
 
 const defaultCtrlEndpoint string = "127.0.0.1:81"
-const defaultDNSEndpoint string = "127.0.0.1:53"
+const defaultDNSEndpoint string = "127.0.0.1"
 
 type defaultDns struct{}
 
@@ -63,15 +63,28 @@ func _main(dns DNSConfig, ctrlEndpoint string, arglen int, args []string) int {
 			fmt.Fprintf(os.Stderr, "Unrecognized arguments.\n")
 			return 1
 		}
-		dns.Config(dnsEndpoint)
-		dns.FlushCache()
+		err := dns.Config(dnsEndpoint)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Failed to configure DNS: %s\n", err)
+		}
+		err = dns.FlushCache()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Failed to flush DNS cache: %s\n", err)
+		}
+
 	case "deconfig":
 		if arglen != 1 {
 			fmt.Fprintf(os.Stderr, "Unrecognized arguments.\n")
 			return 1
 		}
-		dns.Deconfig()
-		dns.FlushCache()
+		err := dns.Deconfig()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Failed to deconfigure DNS: %s\n", err)
+		}
+		err = dns.FlushCache()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Failed to flush DNS cache: %s\n", err)
+		}
 	case "tag":
 		if arglen != 2 {
 			fmt.Fprintf(os.Stderr, "No tag given.\n")
