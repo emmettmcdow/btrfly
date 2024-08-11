@@ -25,6 +25,7 @@ func dns(listen string) {
 
 	// Start listening for UDP packages on the given address
 	conn, err := net.ListenUDP("udp", udpAddr)
+	defer conn.Close()
 	fmt.Printf("DNS server listening on %s\n", DEFAULT_ADDR)
 
 	if err != nil {
@@ -45,6 +46,9 @@ func dns(listen string) {
 			continue
 		}
 		response.header.ancount = 1
+		response.header.qdcount = 1
+		response.header.nscount = 0
+		response.header.artcount = 0
 		qr, opcode, aa, tc, rd, ra, z, rcode := unpacked(response.header.packed)
 		qr = 1
 		ra = 1

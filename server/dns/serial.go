@@ -87,11 +87,12 @@ type Additional struct {
    - We shall do it by adding and subtracting 8 (ew)
 */
 func packed(qr, opcode, aa, tc, rd, ra, z, rcode uint8) (out uint16) {
-	out |= uint16(qr) << (0 + 8)
-	out |= uint16(opcode) << (1 + 8)
-	out |= uint16(aa) << (5 + 8)
-	out |= uint16(tc) << (6 + 8)
-	out |= uint16(rd) << (7 + 8)
+	out |= uint16(rd) << (0 + 8)
+	out |= uint16(tc) << (1 + 8)
+	out |= uint16(aa) << (2 + 8)
+	out |= uint16(opcode) << (3 + 8)
+	out |= uint16(qr) << (7 + 8)
+
 	out |= uint16(ra) << 7
 	out |= uint16(z) << 4
 	out |= uint16(rcode) << 0
@@ -99,14 +100,15 @@ func packed(qr, opcode, aa, tc, rd, ra, z, rcode uint8) (out uint16) {
 }
 
 func unpacked(in uint16) (qr, opcode, aa, tc, rd, ra, z, rcode uint8) {
-	qr = uint8((in & 0b0000_0000_0000_0001) >> 0)
-	opcode = uint8((in & 0b0000_0000_0001_1110) >> 1)
-	aa = uint8((in & 0b0000_0000_0010_0000) >> 5)
-	tc = uint8((in & 0b0000_0000_0100_0000) >> 6)
-	rd = uint8((in & 0b0000_0000_1000_0000) >> 7)
-	ra = uint8((in & 0b0000_0001_0000_0000) >> 8)
-	z = uint8((in & 0b0000_1110_0000_0000) >> 9)
-	rcode = uint8((in & 0b1111_0000_0000_0000) >> 12)
+	rd = uint8((in & 0b0000_0001_0000_0000) >> 8)
+	tc = uint8((in & 0b0000_0010_0000_0000) >> 9)
+	aa = uint8((in & 0b0000_0100_0000_0000) >> 10)
+	opcode = uint8((in & 0b0111_1000_0000_0000) >> 11)
+	qr = uint8((in & 0b1000_0000_0000_0000) >> 15)
+
+	ra = uint8((in & 0b0000_0000_1000_0000) >> 7)
+	z = uint8((in & 0b0000_0000_0111_0000) >> 4)
+	rcode = uint8((in & 0b0000_0000_0000_1111) >> 0)
 	return qr, opcode, aa, tc, rd, ra, z, rcode
 }
 
