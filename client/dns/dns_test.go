@@ -1,7 +1,6 @@
 package dns
 
 import (
-	"fmt"
 	"net"
 	"os/exec"
 	"runtime"
@@ -32,35 +31,35 @@ func DNSLookupHelper(t *testing.T, callback callback_t) {
 
 	err = Config(BLACKHOLE_IP)
 	if err != nil {
-		Deconfig()
-		FlushCache()
-		t.Error(fmt.Sprintf("Failed to Configure: %s", err))
+		_ = Deconfig()
+		_ = FlushCache()
+		t.Errorf("Failed to Configure: %s", err)
 		return
 	}
 	err = FlushCache()
 	if err != nil {
-		t.Error(fmt.Sprintf("Failed to FlushCache: %s", err))
+		t.Errorf("Failed to FlushCache: %s", err)
 		return
 	}
 
 	// Should fail
 	err = callback()
 	if err == nil {
-		Deconfig()
-		FlushCache()
+		_ = Deconfig()
+		_ = FlushCache()
 		t.Error("Successfully looked up the IP, meaning dns.Config failed.")
 		return
 	}
 
 	err = Deconfig()
 	if err != nil {
-		FlushCache()
-		t.Error(fmt.Sprintf("Failed to Deconfigure: %s", err))
+		_ = FlushCache()
+		t.Errorf("Failed to Deconfigure: %s", err)
 		return
 	}
 	err = FlushCache()
 	if err != nil {
-		t.Error(fmt.Sprintf("Failed to FlushCache: %s", err))
+		t.Errorf("Failed to FlushCache: %s", err)
 		return
 	}
 	// Should pass

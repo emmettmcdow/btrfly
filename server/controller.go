@@ -46,7 +46,9 @@ func controller(wg *sync.WaitGroup, port uint, tlsEnabled bool) (s *http.Server)
 				http.StatusBadRequest)
 			return
 		}
-		Tag(tag[0])
+		if err := Tag(tag[0]); err != nil {
+			fmt.Printf("Failed to Tag %s: %s\n", tag[0], err)
+		}
 	})
 	m.HandleFunc("/mode", func(w http.ResponseWriter, r *http.Request) {
 		mode, ok := r.Header["Mode"]

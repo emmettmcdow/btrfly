@@ -205,9 +205,14 @@ func TestController(t *testing.T) {
 	// Start up controller
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
-	s := controller(wg, 5678)
+	s := controller(wg, 5678, false)
 	// TODO: ditch the TODO
-	defer s.Shutdown(context.TODO())
+	defer func() {
+		err := s.Shutdown(context.TODO())
+		if err != nil {
+			t.Errorf("Failed to shutdown with error: %s\n", err)
+		}
+	}()
 
 	subtests := []struct {
 		name    string

@@ -78,12 +78,12 @@ type tempResponse struct {
 }
 
 func proxy(wg *sync.WaitGroup, port uint, tlsEnabled bool) (s *http.Server) {
-	var k btrfly.Handler
+	var k cache.Handler
 	var config *tls.Config
 
 	// TODO: this is temporary for testing
-	k = btrfly.CreateMemory()
-	k.AddUser(btrfly.CreateUser())
+	k = cache.CreateMemory()
+	k.AddUser(cache.CreateUser())
 
 	var httpClient *http.Client
 
@@ -106,7 +106,7 @@ func proxy(wg *sync.WaitGroup, port uint, tlsEnabled bool) (s *http.Server) {
 		// TODO: use the conditional get
 		switch proxyMode {
 		case MODE_R:
-			upstreamArtifact := &btrfly.Artifact{}
+			upstreamArtifact := &cache.Artifact{}
 
 			upstreamRequest, err := generateUpstreamRequest(r)
 			if err != nil {
@@ -225,7 +225,7 @@ func Mode(mode string) (err error) {
 	if err != nil {
 		return fmt.Errorf("Failed to convert mode %s to integer: %s", mode, err)
 	}
-	if m < 0 || m > 2 {
+	if m > 2 {
 		return fmt.Errorf("Invalid error mode %d", m)
 	}
 	proxyMode = ProxyMode(m)
@@ -324,7 +324,7 @@ func relayRequest(proxyReq *http.Request, httpClient clientSender) (response tem
 	return response, err
 }
 
-func respondWithArtifact(w http.ResponseWriter, r *http.Request, artifact *btrfly.Artifact) (err error) {
+func respondWithArtifact(w http.ResponseWriter, r *http.Request, artifact *cache.Artifact) (err error) {
 	w.Header().Add("Content-Length", fmt.Sprint(len(artifact.Data)))
 
 	// Set the status code of the original response to the status code of the proxy response

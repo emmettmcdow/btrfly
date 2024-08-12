@@ -25,7 +25,12 @@ func dns(listen string) {
 
 	// Start listening for UDP packages on the given address
 	conn, err := net.ListenUDP("udp", udpAddr)
-	defer conn.Close()
+	defer func() {
+		err = conn.Close()
+		if err != nil {
+			fmt.Printf("Failed to close UDP connection: %s\n", err)
+		}
+	}()
 	fmt.Printf("DNS server listening on %s\n", DEFAULT_ADDR)
 
 	if err != nil {
@@ -49,9 +54,9 @@ func dns(listen string) {
 		response.header.qdcount = 1
 		response.header.nscount = 0
 		response.header.artcount = 0
-		qr, opcode, aa, tc, rd, ra, z, rcode := unpacked(response.header.packed)
-		qr = 1
-		ra = 1
+		_, opcode, aa, tc, rd, _, z, rcode := unpacked(response.header.packed)
+		qr := uint8(1)
+		ra := uint8(1)
 		response.header.packed = packed(qr, opcode, aa, tc, rd, ra, z, rcode)
 
 		answer := Answer{
@@ -68,7 +73,10 @@ func dns(listen string) {
 			fmt.Printf("Failed to serialize message: %s", err)
 			continue
 		}
-		conn.WriteToUDP(data, client)
+		_, err = conn.WriteToUDP(data, client)
+		if err != nil {
+			fmt.Printf("Failed to write to UDP: %s\n", err)
+		}
 	}
 }
 

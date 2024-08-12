@@ -1,7 +1,6 @@
-package btrfly
+package cache
 
 import (
-	"errors"
 	"fmt"
 )
 
@@ -19,7 +18,7 @@ func (m *Memory) AddUser(user *User) {
 func (m *Memory) GetArtifact(url string, tagID string, userID uint64) (artifact *Artifact, err error) {
 	user := m.Users[userID]
 	if user == nil {
-		return artifact, errors.New(fmt.Sprintf("Failed to get user with ID: %d", userID))
+		return artifact, fmt.Errorf("Failed to get user with ID: %d", userID)
 	}
 	tag, ok := user.Tags[tagID]
 	if !ok {
@@ -28,7 +27,7 @@ func (m *Memory) GetArtifact(url string, tagID string, userID uint64) (artifact 
 	}
 	artifact, ok = tag.Artifacts[url]
 	if !ok {
-		return artifact, errors.New(fmt.Sprintf("Failed to get artifact for URL: %s", url))
+		return artifact, fmt.Errorf("Failed to get artifact for URL: %s", url)
 	}
 	return artifact, nil
 }
@@ -36,7 +35,7 @@ func (m *Memory) GetArtifact(url string, tagID string, userID uint64) (artifact 
 func (m *Memory) AddArtifact(artifact *Artifact, url string, tagID string, userID uint64) (err error) {
 	user := m.Users[userID]
 	if user == nil {
-		return errors.New(fmt.Sprintf("Failed to get user with ID: %d", userID))
+		return fmt.Errorf("Failed to get user with ID: %d", userID)
 	}
 	tag, ok := user.Tags[tagID]
 	if !ok {

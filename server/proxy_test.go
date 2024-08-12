@@ -67,9 +67,14 @@ func TestProxyRecordAndPlayback(t *testing.T) {
 	// btrfly
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
-	s := proxy(wg, 80)
+	s := proxy(wg, 80, false)
 	// TODO: ditch the TODO
-	defer s.Shutdown(context.TODO())
+	defer func() {
+		err := s.Shutdown(context.TODO())
+		if err != nil {
+			t.Errorf("Failed to shutdown with error: %s\n", err)
+		}
+	}()
 
 	// Upstream Server
 	go func() {
@@ -82,16 +87,23 @@ func TestProxyRecordAndPlayback(t *testing.T) {
 		// Signal that server is open for business.
 		serverReady <- server.Close
 
-		server.Serve(l) // Do not care if it fails...
+		err = server.Serve(l)
+		if err != nil {
+			fmt.Printf("Failed to Serve  with error: %s\n", err)
+		}
 		fmt.Println("Shutting down fileserver")
 	}()
 	shutdown := <-serverReady
-	defer shutdown()
+	defer func() {
+		if err := shutdown(); err != nil {
+			fmt.Printf("Failed to shutdown: %s\n", err)
+		}
+	}()
 
 	// Set to record
 	proxyMode = MODE_R
 
-	t.Run(fmt.Sprintf("RECORD GET http://127.0.0.1:1234/root/a ORIGINAL"), func(t *testing.T) {
+	t.Run("RECORD GET http://127.0.0.1:1234/root/a ORIGINAL", func(t *testing.T) {
 		body, statusCode, err := doBtrflyRequest("GET", "http://127.0.0.1:1234/root/a", httpClient)
 		if err != nil {
 			t.Errorf("Failed to do http request: %s\n", err)
@@ -104,7 +116,7 @@ func TestProxyRecordAndPlayback(t *testing.T) {
 		}
 	})
 
-	t.Run(fmt.Sprintf("RECORD GET http://127.0.0.1:1234/root/b ORIGINAL"), func(t *testing.T) {
+	t.Run("RECORD GET http://127.0.0.1:1234/root/b ORIGINAL", func(t *testing.T) {
 		// TODO: what should be done if a user downloads the same resource twice in one build?
 		body, statusCode, err := doBtrflyRequest("GET", "http://127.0.0.1:1234/root/b", httpClient)
 		if err != nil {
@@ -125,7 +137,7 @@ func TestProxyRecordAndPlayback(t *testing.T) {
 	memoryFS["root/a"] = &fstest.MapFile{Data: []byte(aUpdated)}
 	memoryFS["root/b"] = &fstest.MapFile{Data: []byte(bUpdated)}
 
-	t.Run(fmt.Sprintf("PLAYBACK GET http://127.0.0.1:1234/root/a UPDATED"), func(t *testing.T) {
+	t.Run("PLAYBACK GET http://127.0.0.1:1234/root/a UPDATED", func(t *testing.T) {
 		body, statusCode, err := doBtrflyRequest("GET", "http://127.0.0.1:1234/root/a", httpClient)
 		if err != nil {
 			t.Errorf("Failed to do http request: %s\n", err)
@@ -138,7 +150,7 @@ func TestProxyRecordAndPlayback(t *testing.T) {
 		}
 	})
 
-	t.Run(fmt.Sprintf("PLAYBACK GET http://127.0.0.1:1234/root/b UPDATED"), func(t *testing.T) {
+	t.Run("PLAYBACK GET http://127.0.0.1:1234/root/b UPDATED", func(t *testing.T) {
 		// TODO: what should be done if a user downloads the same resource twice in one build?
 		body, statusCode, err := doBtrflyRequest("GET", "http://127.0.0.1:1234/root/b", httpClient)
 		if err != nil {
@@ -152,7 +164,7 @@ func TestProxyRecordAndPlayback(t *testing.T) {
 		}
 	})
 
-	t.Run(fmt.Sprintf("PLAYBACK GET http://127.0.0.1:1234/root/c DNE"), func(t *testing.T) {
+	t.Run("PLAYBACK GET http://127.0.0.1:1234/root/c DNE", func(t *testing.T) {
 		_, statusCode, err := doBtrflyRequest("GET", "http://127.0.0.1:1234/root/c", httpClient)
 		if err != nil {
 			t.Errorf("Failed to do http request: %s\n", err)
@@ -181,9 +193,14 @@ func TestPassthroughProxy(t *testing.T) {
 	// btrfly
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
-	s := proxy(wg, 80)
+	s := proxy(wg, 80, false)
 	// TODO: ditch the TODO
-	defer s.Shutdown(context.TODO())
+	defer func() {
+		err := s.Shutdown(context.TODO())
+		if err != nil {
+			t.Errorf("Failed to shutdown with error: %s\n", err)
+		}
+	}()
 
 	// Upstream Server
 	go func() {
@@ -196,11 +213,18 @@ func TestPassthroughProxy(t *testing.T) {
 		// Signal that server is open for business.
 		serverReady <- server.Close
 
-		server.Serve(l) // Do not care if it fails...
+		err = server.Serve(l)
+		if err != nil {
+			t.Errorf("Failed to serve with error: %s\n", err)
+		}
 		fmt.Println("Shutting down fileserver")
 	}()
 	shutdown := <-serverReady
-	defer shutdown()
+	defer func() {
+		if err := shutdown(); err != nil {
+			fmt.Printf("Failed to shutdown: %s\n", err)
+		}
+	}()
 
 	cases := []struct {
 		Method   string
@@ -315,11 +339,11 @@ func prettyHeader(header http.Header) (output string) {
 
 	for name, values := range header {
 		offset := len(name) + 4
-		output += fmt.Sprintf("%s: [\n", name)
+		output += name + ": [\n"
 		for _, value := range values {
 			output += fmt.Sprintf("%s'%s'\n", strings.Repeat(" ", offset), strings.ReplaceAll(value, " ", "…"))
 		}
-		output += fmt.Sprint("]\n")
+		output += "]\n"
 	}
 
 	return output
