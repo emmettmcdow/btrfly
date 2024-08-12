@@ -1,7 +1,6 @@
 package dns
 
 import (
-	"fmt"
 	"net"
 	"os/exec"
 	"runtime"
