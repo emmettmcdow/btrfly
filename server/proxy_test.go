@@ -94,7 +94,11 @@ func TestProxyRecordAndPlayback(t *testing.T) {
 		fmt.Println("Shutting down fileserver")
 	}()
 	shutdown := <-serverReady
-	defer shutdown()
+	defer func() {
+		if err := shutdown(); err != nil {
+			fmt.Printf("Failed to shutdown: %s\n", err)
+		}
+	}()
 
 	// Set to record
 	proxyMode = MODE_R
@@ -216,7 +220,11 @@ func TestPassthroughProxy(t *testing.T) {
 		fmt.Println("Shutting down fileserver")
 	}()
 	shutdown := <-serverReady
-	defer shutdown()
+	defer func() {
+		if err := shutdown(); err != nil {
+			fmt.Printf("Failed to shutdown: %s\n", err)
+		}
+	}()
 
 	cases := []struct {
 		Method   string
