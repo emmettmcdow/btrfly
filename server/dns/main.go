@@ -54,9 +54,9 @@ func dns(listen string) {
 		response.header.qdcount = 1
 		response.header.nscount = 0
 		response.header.artcount = 0
-		_, opcode, aa, tc, rd, ra, z, rcode := unpacked(response.header.packed)
+		_, opcode, aa, tc, rd, _, z, rcode := unpacked(response.header.packed)
 		qr := uint8(1)
-		ra = 1
+		ra := uint8(1)
 		response.header.packed = packed(qr, opcode, aa, tc, rd, ra, z, rcode)
 
 		answer := Answer{
