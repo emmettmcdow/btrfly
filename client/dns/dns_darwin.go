@@ -9,7 +9,7 @@ import (
 func Config(ip string) (err error) {
 	interfaces, err := macGetAllNetworkServices()
 	if err != nil {
-		return fmt.Errorf("Failed to get all network services: %s\n", err)
+		return fmt.Errorf("failed to get all network services: %s", err)
 	}
 
 	for _, interface_name := range interfaces {
@@ -23,7 +23,7 @@ func Config(ip string) (err error) {
 func Deconfig() (err error) {
 	interfaces, err := macGetAllNetworkServices()
 	if err != nil {
-		return fmt.Errorf("Failed to get all network services: %s\n", err)
+		return fmt.Errorf("failed to get all network services: %s", err)
 	}
 
 	for _, interface_name := range interfaces {
@@ -43,7 +43,7 @@ func FlushCache() (err error) {
 	cmd.Stderr = &stderr
 	err = cmd.Run()
 	if err != nil {
-		return fmt.Errorf("Failed to run [dscacheutil...]. Stdout:\n %s\nStderr:\n %s\n", stderr.String(), out.String())
+		return fmt.Errorf("failed to run [dscacheutil...]. Stdout:\n %s\nStderr:\n %s", stderr.String(), out.String())
 	}
 	// TODO: do something about this sudo? Seems the only one that requires it...
 	cmd = exec.Command("sudo", "killall", "-HUP", "mDNSResponder")
@@ -51,7 +51,7 @@ func FlushCache() (err error) {
 	cmd.Stderr = &stderr
 	err = cmd.Run()
 	if err != nil {
-		return fmt.Errorf("Failed to run [killall mDNSResponsder...]. Stdout:\n %s\nStderr:\n %s\n", stderr.String(), out.String())
+		return fmt.Errorf("failed to run [killall mDNSResponsder...]. Stdout:\n %s\nStderr:\n %s", stderr.String(), out.String())
 	}
 	return nil
 }
@@ -64,7 +64,7 @@ func macDNSConfigForInterface(interface_name string, ip string) (err error) {
 	cmd.Stderr = &stderr
 	err = cmd.Run()
 	if err != nil {
-		return fmt.Errorf("Failed to run [networksetup -setdnsservers...]. Stdout:\n %s\nStderr:\n %s\n", stderr.String(), out.String())
+		return fmt.Errorf("failed to run [networksetup -setdnsservers...]. Stdout:\n %s\nStderr:\n %s", stderr.String(), out.String())
 	}
 	return nil
 }
@@ -88,7 +88,7 @@ func macGetAllNetworkServices() (interfaces []string, err error) {
 	cmd.Stderr = &stderr
 	err = cmd.Run()
 	if err != nil {
-		return interfaces, fmt.Errorf("Failed to run [networksetup -listallnetworkservices...]. Stdout:\n %s\nStderr:\n %s\n", stderr.String(), out.String())
+		return interfaces, fmt.Errorf("failed to run [networksetup -listallnetworkservices...]. Stdout:\n %s\nStderr:\n %s", stderr.String(), out.String())
 	}
 
 	interfaces = deleteEmpty(strings.Split(out.String(), "\n")[1:])
@@ -104,7 +104,7 @@ func macDNSDeconfigForInterface(interface_name string) (err error) {
 	cmd.Stderr = &stderr
 	err = cmd.Run()
 	if err != nil {
-		return fmt.Errorf("Failed to run [networksetup -setdnsservers...]. Stdout:\n %s\nStderr:\n %s\n", stderr.String(), out.String())
+		return fmt.Errorf("failed to run [networksetup -setdnsservers...]. Stdout:\n %s\nStderr:\n %s", stderr.String(), out.String())
 	}
 	return nil
 }

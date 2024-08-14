@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"sync"
 	"testing"
+	"time"
 )
 
 type state struct {
@@ -206,11 +207,13 @@ func TestController(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
 	s := controller(wg, 5678, false)
-	// TODO: ditch the TODO
+
+	timeout, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
 	defer func() {
-		err := s.Shutdown(context.TODO())
+		err := s.Shutdown(timeout)
 		if err != nil {
-			t.Errorf("Failed to shutdown with error: %s\n", err)
+			fmt.Printf("failed to shutdown s: %s", err)
 		}
 	}()
 

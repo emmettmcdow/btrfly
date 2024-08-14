@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
+	"time"
 )
 
 func main() {
@@ -22,29 +23,29 @@ func main() {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 	go func() {
-		// TODO: figure out this TODO business with the context
+		timeout, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
 		defer func() {
-			err := controllerServer.Shutdown(context.TODO())
+			err := proxyServer.Shutdown(timeout)
 			if err != nil {
-				fmt.Printf("Failed to shutdown with error: %s\n", err)
+				fmt.Printf("failed to shutdown proxyServer: %s", err)
 			}
 		}()
 		defer func() {
-			err := proxyServer.Shutdown(context.TODO())
+			err := proxyServerTLS.Shutdown(timeout)
 			if err != nil {
-				fmt.Printf("Failed to shutdown with error: %s\n", err)
+				fmt.Printf("failed to shutdown proxyServerTLS: %s", err)
 			}
 		}()
 		defer func() {
-			err := proxyServerTLS.Shutdown(context.TODO())
+			err := controllerServer.Shutdown(timeout)
 			if err != nil {
-				fmt.Printf("Failed to shutdown with error: %s\n", err)
+				fmt.Printf("failed to shutdown controllerServer: %s", err)
 			}
 		}()
 		for sig := range c {
 			if sig == syscall.SIGINT {
 				log.Println("Recieved keyboard interrupt. Shutting down server.")
-				break
 			}
 		}
 	}()

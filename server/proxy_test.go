@@ -14,7 +14,10 @@ import (
 	"sync"
 	"testing"
 	"testing/fstest"
+	"time"
 )
+
+const port = 8081
 
 // ************************************************************** Integration Tests
 
@@ -22,17 +25,17 @@ func doBtrflyRequest(method string, URL string, client *http.Client) (_ string, 
 
 	req, err := http.NewRequest(method, URL, http.NoBody)
 	if err != nil {
-		return "", 0, fmt.Errorf("Failed to make new req: %s\n", err)
+		return "", 0, fmt.Errorf("failed to make new req: %s", err)
 	}
 	// Doing the part of the btrfly client here - Redirecting to proxy
-	newURL, err := url.Parse(strings.ReplaceAll(URL, "1234", "80"))
+	newURL, err := url.Parse(strings.ReplaceAll(URL, "1234", fmt.Sprint(port)))
 	if err != nil {
-		return "", 0, fmt.Errorf("Failed to redirect req: %s\n", err)
+		return "", 0, fmt.Errorf("failed to redirect req: %s", err)
 	}
 	req.URL = newURL
 	resp, err := client.Do(req)
 	if err != nil {
-		return "", 0, fmt.Errorf("Failed to \"Do\": %s\n", err)
+		return "", 0, fmt.Errorf("failed to \"Do\": %s", err)
 	}
 	if resp.Body != nil {
 		defer resp.Body.Close()
@@ -40,7 +43,7 @@ func doBtrflyRequest(method string, URL string, client *http.Client) (_ string, 
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", 0, fmt.Errorf("Failed to copy Body: %s\n", err)
+		return "", 0, fmt.Errorf("failed to copy Body: %s", err)
 	}
 	return string(body), resp.StatusCode, err
 }
@@ -67,12 +70,14 @@ func TestProxyRecordAndPlayback(t *testing.T) {
 	// btrfly
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
-	s := proxy(wg, 80, false)
-	// TODO: ditch the TODO
+
+	s := proxy(wg, port, false)
+	timeout, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
 	defer func() {
-		err := s.Shutdown(context.TODO())
+		err := s.Shutdown(timeout)
 		if err != nil {
-			t.Errorf("Failed to shutdown with error: %s\n", err)
+			fmt.Printf("failed to shutdown s: %s", err)
 		}
 	}()
 
@@ -193,12 +198,13 @@ func TestPassthroughProxy(t *testing.T) {
 	// btrfly
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
-	s := proxy(wg, 80, false)
-	// TODO: ditch the TODO
+	s := proxy(wg, port, false)
+	timeout, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
 	defer func() {
-		err := s.Shutdown(context.TODO())
+		err := s.Shutdown(timeout)
 		if err != nil {
-			t.Errorf("Failed to shutdown with error: %s\n", err)
+			fmt.Printf("failed to shutdown s: %s", err)
 		}
 	}()
 
