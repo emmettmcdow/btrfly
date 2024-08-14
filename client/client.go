@@ -171,14 +171,14 @@ func tag(tag string, ctrlEndpoint string) (err error) {
 	req.Header.Add("Tag", tag)
 	resp, err := client.Do(req)
 	if err != nil {
-		return fmt.Errorf("Failed to perform http request: %s", err)
+		return fmt.Errorf("failed to perform http request: %s", err)
 	}
 	if resp.StatusCode != 200 {
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {
-			return fmt.Errorf("Got response code %d, and failed to read body", resp.StatusCode)
+			return fmt.Errorf("got response code %d, and failed to read body", resp.StatusCode)
 		}
-		return fmt.Errorf("Got response code %d with body:\n%s\n", resp.StatusCode, body)
+		return fmt.Errorf("got response code %d with body:\n%s", resp.StatusCode, body)
 	}
 	return nil
 }
@@ -191,14 +191,14 @@ func login(id string, ctrlEndpoint string) (err error) {
 	req.Header.Add("Id", id)
 	resp, err := client.Do(req)
 	if err != nil {
-		return fmt.Errorf("Failed to perform http request: %s", err)
+		return fmt.Errorf("failed to perform http request: %s", err)
 	}
 	if resp.StatusCode != 200 {
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {
-			return fmt.Errorf("Got response code %d, and failed to read body", resp.StatusCode)
+			return fmt.Errorf("got response code %d, and failed to read body", resp.StatusCode)
 		}
-		return fmt.Errorf("Got response code %d with body:\n%s\n", resp.StatusCode, body)
+		return fmt.Errorf("got response code %d with body:\n%s", resp.StatusCode, body)
 	}
 	return nil
 }
@@ -213,7 +213,7 @@ func mode(mode string, ctrlEndpoint string) (err error) {
 	case "standby":
 		modeI = "2"
 	default:
-		return fmt.Errorf("Mode '%s' is not a valid mode.", mode)
+		return fmt.Errorf("mode '%s' is not a valid mode", mode)
 	}
 	req, err := http.NewRequest("GET", "http://"+ctrlEndpoint+"/mode", http.NoBody)
 	if err != nil {
@@ -222,14 +222,14 @@ func mode(mode string, ctrlEndpoint string) (err error) {
 	req.Header.Add("Mode", modeI)
 	resp, err := client.Do(req)
 	if err != nil {
-		return fmt.Errorf("Failed to perform http request: %s", err)
+		return fmt.Errorf("failed to perform http request: %s", err)
 	}
 	if resp.StatusCode != 200 {
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {
-			return fmt.Errorf("Got response code %d, and failed to read body", resp.StatusCode)
+			return fmt.Errorf("got response code %d, and failed to read body", resp.StatusCode)
 		}
-		return fmt.Errorf("Got response code %d with body:\n%s\n", resp.StatusCode, body)
+		return fmt.Errorf("got response code %d with body:\n%s", resp.StatusCode, body)
 	}
 	return nil
 }

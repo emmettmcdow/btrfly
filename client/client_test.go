@@ -78,15 +78,19 @@ func consumeRequest(talkback <-chan string) (output string) {
 }
 
 func TestClient(t *testing.T) {
+	port := 8081
 	talkback := make(chan string, 1)
 
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
-	controllerServer := fakeController(wg, talkback, 81)
+
+	controllerServer := fakeController(wg, talkback, port)
+	timeout, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
 	defer func() {
-		err := controllerServer.Shutdown(context.TODO())
+		err := controllerServer.Shutdown(timeout)
 		if err != nil {
-			t.Errorf("Failed to shutdown with error: %s\n", err)
+			fmt.Printf("failed to shutdown controllerServer: %s", err)
 		}
 	}()
 
@@ -131,7 +135,7 @@ func TestClient(t *testing.T) {
 	for _, st := range subtests {
 		t.Run(strings.Join(st.command, " "), func(t *testing.T) {
 			fakeConfig := &FakeConfig{}
-			_main(fakeConfig, "127.0.0.1:81", len(st.command), st.command)
+			_main(fakeConfig, fmt.Sprintf("127.0.0.1:%d", port), len(st.command), st.command)
 			if fakeConfig.ConfigCalled != st.nconfigs {
 				t.Errorf("Expected %d call(s) to Config, got %d\n", st.nconfigs, fakeConfig.ConfigCalled)
 			}

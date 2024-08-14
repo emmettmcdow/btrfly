@@ -120,32 +120,32 @@ func Serialize(response Message) (data []byte, err error) {
 
 	n, err := serialHeader(buf, response.header)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to serialize response header: %s", err)
+		return nil, fmt.Errorf("failed to serialize response header: %s", err)
 	}
 	offset += n
 
 	for _, question := range response.questions {
 		written, err := serialQuestion(buf, namemap, offset, &question)
 		if err != nil {
-			return nil, fmt.Errorf("Failed to serialize question: %s", err)
+			return nil, fmt.Errorf("failed to serialize question: %s", err)
 		}
 		offset += written
 	}
 	for _, answer := range response.answers {
 		written, err := serialAnswer(buf, namemap, offset, &answer)
 		if err != nil {
-			return nil, fmt.Errorf("Failed to serialize answer: %s", err)
+			return nil, fmt.Errorf("failed to serialize answer: %s", err)
 		}
 		offset += written
 	}
 	for _, authority := range response.authorities {
 		if err = serialAuthority(buf, &authority); err != nil {
-			return nil, fmt.Errorf("Failed to serialize authority: %s", err)
+			return nil, fmt.Errorf("failed to serialize authority: %s", err)
 		}
 	}
 	for _, additional := range response.additional {
 		if err = serialAdditional(buf, &additional); err != nil {
-			return nil, fmt.Errorf("Failed to serialize additional: %s", err)
+			return nil, fmt.Errorf("failed to serialize additional: %s", err)
 		}
 	}
 
@@ -159,7 +159,7 @@ func Deserialize(data []byte) (request Message, err error) {
 
 	read, err := deserialHeader(r, &request.header)
 	if err != nil {
-		return request, fmt.Errorf("Failed to deserialize request header: %s", err)
+		return request, fmt.Errorf("failed to deserialize request header: %s", err)
 	}
 	offset += read
 
@@ -167,7 +167,7 @@ func Deserialize(data []byte) (request Message, err error) {
 		question := Question{}
 		read, err := deserialQuestion(r, namemap, offset, &question)
 		if err != nil {
-			return request, fmt.Errorf("Failed to deserialize question #%d: %s", i, err)
+			return request, fmt.Errorf("failed to deserialize question #%d: %s", i, err)
 		}
 		offset += read
 		request.questions = append(request.questions, question)
@@ -176,19 +176,19 @@ func Deserialize(data []byte) (request Message, err error) {
 	for _, answer := range request.answers {
 		read, err := deserialAnswer(r, namemap, offset, &answer)
 		if err != nil {
-			return request, fmt.Errorf("Failed to deserialize answer: %s", err)
+			return request, fmt.Errorf("failed to deserialize answer: %s", err)
 		}
 		offset += read
 		request.answers = append(request.answers, answer)
 	}
 	for _, authority := range request.authorities {
 		if err = deserialAuthority(r, &authority); err != nil {
-			return request, fmt.Errorf("Failed to deserialize authority: %s", err)
+			return request, fmt.Errorf("failed to deserialize authority: %s", err)
 		}
 	}
 	for _, additional := range request.additional {
 		if err = deserialAdditional(r, &additional); err != nil {
-			return request, fmt.Errorf("Failed to deserialize additional: %s", err)
+			return request, fmt.Errorf("failed to deserialize additional: %s", err)
 		}
 	}
 
@@ -198,27 +198,27 @@ func Deserialize(data []byte) (request Message, err error) {
 //****************************************************************************************** Header
 func deserialHeader(r *bytes.Reader, header *Header) (read uint16, err error) {
 	if err = binary.Read(r, binary.BigEndian, &header.id); err != nil {
-		return read, fmt.Errorf("Failed to read id: %s", err)
+		return read, fmt.Errorf("failed to read id: %s", err)
 	}
 	read += 2
 	if err = binary.Read(r, binary.BigEndian, &header.packed); err != nil {
-		return read, fmt.Errorf("Failed to read packed: %s", err)
+		return read, fmt.Errorf("failed to read packed: %s", err)
 	}
 	read += 2
 	if err = binary.Read(r, binary.BigEndian, &header.qdcount); err != nil {
-		return read, fmt.Errorf("Failed to read qdcount: %s", err)
+		return read, fmt.Errorf("failed to read qdcount: %s", err)
 	}
 	read += 2
 	if err = binary.Read(r, binary.BigEndian, &header.ancount); err != nil {
-		return read, fmt.Errorf("Failed to read ancount: %s", err)
+		return read, fmt.Errorf("failed to read ancount: %s", err)
 	}
 	read += 2
 	if err = binary.Read(r, binary.BigEndian, &header.nscount); err != nil {
-		return read, fmt.Errorf("Failed to read nscount: %s", err)
+		return read, fmt.Errorf("failed to read nscount: %s", err)
 	}
 	read += 2
 	if err = binary.Read(r, binary.BigEndian, &header.artcount); err != nil {
-		return read, fmt.Errorf("Failed to read artcount: %s", err)
+		return read, fmt.Errorf("failed to read artcount: %s", err)
 	}
 	read += 2
 	return read, nil
@@ -226,27 +226,27 @@ func deserialHeader(r *bytes.Reader, header *Header) (read uint16, err error) {
 
 func serialHeader(buf *bytes.Buffer, header Header) (n uint16, err error) {
 	if err = binary.Write(buf, binary.BigEndian, header.id); err != nil {
-		return n, fmt.Errorf("Failed to write id: %s", err)
+		return n, fmt.Errorf("failed to write id: %s", err)
 	}
 	n += 2
 	if err = binary.Write(buf, binary.BigEndian, header.packed); err != nil {
-		return n, fmt.Errorf("Failed to write packed: %s", err)
+		return n, fmt.Errorf("failed to write packed: %s", err)
 	}
 	n += 2
 	if err = binary.Write(buf, binary.BigEndian, header.qdcount); err != nil {
-		return n, fmt.Errorf("Failed to write qdcount: %s", err)
+		return n, fmt.Errorf("failed to write qdcount: %s", err)
 	}
 	n += 2
 	if err = binary.Write(buf, binary.BigEndian, header.ancount); err != nil {
-		return n, fmt.Errorf("Failed to write ancount: %s", err)
+		return n, fmt.Errorf("failed to write ancount: %s", err)
 	}
 	n += 2
 	if err = binary.Write(buf, binary.BigEndian, header.nscount); err != nil {
-		return n, fmt.Errorf("Failed to write nscount: %s", err)
+		return n, fmt.Errorf("failed to write nscount: %s", err)
 	}
 	n += 2
 	if err = binary.Write(buf, binary.BigEndian, header.artcount); err != nil {
-		return n, fmt.Errorf("Failed to write artcount: %s", err)
+		return n, fmt.Errorf("failed to write artcount: %s", err)
 	}
 	n += 2
 	return n, nil
@@ -261,7 +261,7 @@ func deserialName(r *bytes.Reader, namemap map[uint16]string, offset uint16) (na
 		nbuf := make([]byte, 1)
 		n, err := io.ReadAtLeast(r, nbuf, 1)
 		if err != nil || n != 1 {
-			return name, read, fmt.Errorf("Failed to read first byte of name: %s\n", err)
+			return name, read, fmt.Errorf("failed to read first byte of name: %s", err)
 		}
 		read += uint16(n)
 		firstByte := uint8(nbuf[0])
@@ -274,25 +274,25 @@ func deserialName(r *bytes.Reader, namemap map[uint16]string, offset uint16) (na
 			halfOffset := uint16(firstByte&0b0011_1111) << 8
 			n, err := io.ReadAtLeast(r, nbuf, 1)
 			if err != nil || n != 1 {
-				return name, read, fmt.Errorf("Failed to read first byte of name: %s\n", err)
+				return name, read, fmt.Errorf("failed to read first byte of name: %s", err)
 			}
 			read += uint16(n)
 			byteOffset := halfOffset | uint16(nbuf[0])
 			if segment, ok := namemap[byteOffset]; !ok {
-				return name, read, fmt.Errorf("byteOffset %X not in map!", byteOffset)
+				return name, read, fmt.Errorf("byteOffset %X not in map", byteOffset)
 			} else {
 				name += segment
 			}
 		} else if firstByte >= 63 {
 			// Something has gone terribly wrong
-			return name, read, fmt.Errorf("Unexpected segment length (>= 63)")
+			return name, read, fmt.Errorf("unexpected segment length (>= 63)")
 		}
 		// Otherwise it's the length of the next segment
 		seglen := int(firstByte)
 		buf := make([]byte, seglen)
 		n, err = io.ReadAtLeast(r, buf, seglen)
 		if err != nil || n != seglen {
-			return name, read, fmt.Errorf("Expected %d bytes, got %d bytes. Error: %s\n", seglen, n, err)
+			return name, read, fmt.Errorf("expected %d bytes, got %d bytes. Error: %s", seglen, n, err)
 		}
 		read += uint16(n)
 		if segN != 0 {
@@ -312,12 +312,12 @@ func deserialName(r *bytes.Reader, namemap map[uint16]string, offset uint16) (na
 
 func writePointer(buf *bytes.Buffer, ptr uint16) (offset uint16, err error) {
 	if (ptr & 0b1100_0000_0000_0000) != 0 {
-		return offset, fmt.Errorf("Pointer %X location too large!", ptr)
+		return offset, fmt.Errorf("pointer %X location too large", ptr)
 	}
 	ptr |= 0b1100_0000_0000_0000
 
 	if err = binary.Write(buf, binary.BigEndian, ptr); err != nil {
-		return offset, fmt.Errorf("Failed to write seglength: %s", err)
+		return offset, fmt.Errorf("failed to write seglength: %s", err)
 	}
 	return 2, nil
 }
@@ -327,26 +327,26 @@ func serialName(buf *bytes.Buffer, name string) (offset uint16, err error) {
 	// https://en.wikipedia.org/wiki/Hostname#Restrictions_on_valid_host_names
 	n := len(name)
 	if n > 253 {
-		return offset, fmt.Errorf("Total domain name length %d is larger than the max 253\n", n)
+		return offset, fmt.Errorf("total domain name length %d is larger than the max 253", n)
 	}
 
 	for _, segment := range strings.Split(name, ".") {
 		seglen := uint8(len(segment))
 		if seglen > 62 {
-			return offset, fmt.Errorf("Domain has a segment longer than 62 characters")
+			return offset, fmt.Errorf("domain has a segment longer than 62 characters")
 		}
 		if err = binary.Write(buf, binary.BigEndian, seglen); err != nil {
-			return offset, fmt.Errorf("Failed to write seglength: %s", err)
+			return offset, fmt.Errorf("failed to write seglength: %s", err)
 		}
 		for _, c := range segment {
 			if err = binary.Write(buf, binary.BigEndian, byte(c)); err != nil {
-				return offset, fmt.Errorf("Failed to write character: %s", err)
+				return offset, fmt.Errorf("failed to write character: %s", err)
 			}
 		}
 	}
 
 	if err = binary.Write(buf, binary.BigEndian, uint8(0)); err != nil {
-		return offset, fmt.Errorf("Failed to write null terminator: %s", err)
+		return offset, fmt.Errorf("failed to write null terminator: %s", err)
 	}
 	return offset, nil
 }
@@ -366,7 +366,7 @@ func serialQuestion(buf *bytes.Buffer, namemap map[uint16]string, offset uint16,
 	if k, ok := contains(namemap, question.qname); ok {
 		n, err := writePointer(buf, k)
 		if err != nil {
-			return written, fmt.Errorf("Failed to write pointer: %s", err)
+			return written, fmt.Errorf("failed to write pointer: %s", err)
 		}
 		written += n
 	} else {
@@ -374,16 +374,16 @@ func serialQuestion(buf *bytes.Buffer, namemap map[uint16]string, offset uint16,
 		n, err := serialName(buf, question.qname)
 		written += n
 		if err != nil {
-			return written, fmt.Errorf("Failed to serialize response name: %s", err)
+			return written, fmt.Errorf("failed to serialize response name: %s", err)
 		}
 	}
 	if err = binary.Write(buf, binary.BigEndian, question.qtype); err != nil {
-		return written, fmt.Errorf("Failed to write qtype: %s", err)
+		return written, fmt.Errorf("failed to write qtype: %s", err)
 	}
 	written += 2
 
 	if err = binary.Write(buf, binary.BigEndian, question.qclass); err != nil {
-		return written, fmt.Errorf("Failed to write qclass: %s", err)
+		return written, fmt.Errorf("failed to write qclass: %s", err)
 	}
 	written += 2
 	return written, nil
@@ -392,18 +392,18 @@ func serialQuestion(buf *bytes.Buffer, namemap map[uint16]string, offset uint16,
 func deserialQuestion(r *bytes.Reader, namemap map[uint16]string, offset uint16, question *Question) (read uint16, err error) {
 	name, n, err := deserialName(r, namemap, offset)
 	if err != nil {
-		return read, fmt.Errorf("Failed to deserialize request name: %s", err)
+		return read, fmt.Errorf("failed to deserialize request name: %s", err)
 	}
 	read += uint16(n)
 	question.qname = name
 
 	if err = binary.Read(r, binary.BigEndian, &question.qtype); err != nil {
-		return read, fmt.Errorf("Failed to read qtype: %s", err)
+		return read, fmt.Errorf("failed to read qtype: %s", err)
 	}
 	read += 2
 
 	if err = binary.Read(r, binary.BigEndian, &question.qclass); err != nil {
-		return read, fmt.Errorf("Failed to read qclass: %s", err)
+		return read, fmt.Errorf("failed to read qclass: %s", err)
 	}
 	read += 2
 
@@ -414,25 +414,25 @@ func deserialQuestion(r *bytes.Reader, namemap map[uint16]string, offset uint16,
 func deserialAnswer(r *bytes.Reader, namemap map[uint16]string, offset uint16, answer *Answer) (read uint16, err error) {
 	name, n, err := deserialName(r, namemap, offset)
 	if err != nil {
-		return read, fmt.Errorf("Failed to deserialize request name: %s", err)
+		return read, fmt.Errorf("failed to deserialize request name: %s", err)
 	}
 	read += n
 	answer.name = name
 
 	if err = binary.Read(r, binary.BigEndian, answer.kind); err != nil {
-		return read, fmt.Errorf("Failed to read kind(aka type): %s", err)
+		return read, fmt.Errorf("failed to read kind(aka type): %s", err)
 	}
 	read += 2
 	if err = binary.Read(r, binary.BigEndian, answer.class); err != nil {
-		return read, fmt.Errorf("Failed to read class: %s", err)
+		return read, fmt.Errorf("failed to read class: %s", err)
 	}
 	read += 2
 	if err = binary.Read(r, binary.BigEndian, answer.ttl); err != nil {
-		return read, fmt.Errorf("Failed to read ttl: %s", err)
+		return read, fmt.Errorf("failed to read ttl: %s", err)
 	}
 	read += 4
 	if err = binary.Read(r, binary.BigEndian, answer.rdlength); err != nil {
-		return read, fmt.Errorf("Failed to read rdlength: %s", err)
+		return read, fmt.Errorf("failed to read rdlength: %s", err)
 	}
 	read += 2
 	return read, nil
@@ -442,7 +442,7 @@ func serialAnswer(buf *bytes.Buffer, namemap map[uint16]string, offset uint16, a
 	if k, ok := contains(namemap, answer.name); ok {
 		n, err := writePointer(buf, k)
 		if err != nil {
-			return written, fmt.Errorf("Failed to write pointer: %s", err)
+			return written, fmt.Errorf("failed to write pointer: %s", err)
 		}
 		written += n
 	} else {
@@ -450,27 +450,27 @@ func serialAnswer(buf *bytes.Buffer, namemap map[uint16]string, offset uint16, a
 		n, err := serialName(buf, answer.name)
 		written += n
 		if err != nil {
-			return written, fmt.Errorf("Failed to serialize response name: %s", err)
+			return written, fmt.Errorf("failed to serialize response name: %s", err)
 		}
 	}
 
 	if err = binary.Write(buf, binary.BigEndian, answer.kind); err != nil {
-		return written, fmt.Errorf("Failed to write kind(aka type): %s", err)
+		return written, fmt.Errorf("failed to write kind(aka type): %s", err)
 	}
 	written += 2
 
 	if err = binary.Write(buf, binary.BigEndian, answer.class); err != nil {
-		return written, fmt.Errorf("Failed to write class: %s", err)
+		return written, fmt.Errorf("failed to write class: %s", err)
 	}
 	written += 2
 
 	if err = binary.Write(buf, binary.BigEndian, answer.ttl); err != nil {
-		return written, fmt.Errorf("Failed to write ttl: %s", err)
+		return written, fmt.Errorf("failed to write ttl: %s", err)
 	}
 	written += 4
 
 	if err = binary.Write(buf, binary.BigEndian, answer.rdlength); err != nil {
-		return written, fmt.Errorf("Failed to write rdlength: %s", err)
+		return written, fmt.Errorf("failed to write rdlength: %s", err)
 	}
 	written += 2
 
@@ -478,7 +478,7 @@ func serialAnswer(buf *bytes.Buffer, namemap map[uint16]string, offset uint16, a
 	switch answer.kind {
 	case 0x0001:
 		if err = binary.Write(buf, binary.BigEndian, answer.rdata); err != nil {
-			return written, fmt.Errorf("Failed to write rdata: %s", err)
+			return written, fmt.Errorf("failed to write rdata: %s", err)
 		}
 		written += 4
 	case 0x0002:
@@ -487,7 +487,7 @@ func serialAnswer(buf *bytes.Buffer, namemap map[uint16]string, offset uint16, a
 	default:
 		// These other "types" should be unsupported for now
 		// We probably(?) don't need them
-		return written, fmt.Errorf("response.kind is invalid: %X\n", answer.kind)
+		return written, fmt.Errorf("response.kind is invalid: %X", answer.kind)
 	}
 	return written, nil
 }

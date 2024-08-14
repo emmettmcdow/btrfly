@@ -22,19 +22,19 @@ func Config(ip string) (err error) {
 	cmd1.Stderr = &stderr
 	err = cmd1.Run()
 	if err != nil {
-		return fmt.Errorf("Failed to run [tee /etc/resolv.conf...]. Stderr: %s", stderr.String())
+		return fmt.Errorf("failed to run [tee /etc/resolv.conf...]. Stderr: %s", stderr.String())
 	}
 	cmd2.Stdout = &out
 	cmd2.Stderr = &stderr
 	err = cmd2.Run()
 	if err != nil {
-		return fmt.Errorf("Failed to run [mv resolv.conf -> tmp...]. Stderr: %s", stderr.String())
+		return fmt.Errorf("failed to run [mv resolv.conf -> tmp...]. Stderr: %s", stderr.String())
 	}
 	cmd3.Stdout = &out
 	cmd3.Stderr = &stderr
 	err = cmd3.Run()
 	if err != nil {
-		return fmt.Errorf("Failed to run [ln -s resolv-manual resolv...]. Stderr: %s", stderr.String())
+		return fmt.Errorf("failed to run [ln -s resolv-manual resolv...]. Stderr: %s", stderr.String())
 	}
 
 	return nil
@@ -51,13 +51,13 @@ func Deconfig() (err error) {
 	cmd1.Stderr = &stderr
 	err = cmd1.Run()
 	if err != nil {
-		return fmt.Errorf("Failed to run [mv tmp-resolv -> resolv...]. Stderr: %s", stderr.String())
+		return fmt.Errorf("failed to run [mv tmp-resolv -> resolv...]. Stderr: %s", stderr.String())
 	}
 	cmd2.Stdout = &out
 	cmd2.Stderr = &stderr
 	err = cmd2.Run()
 	if err != nil {
-		return fmt.Errorf("Failed to run [rm resolv-manual...]. Stderr: %s", stderr.String())
+		return fmt.Errorf("failed to run [rm resolv-manual...]. Stderr: %s", stderr.String())
 	}
 
 	return nil

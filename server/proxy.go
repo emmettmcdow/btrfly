@@ -209,7 +209,7 @@ func proxy(wg *sync.WaitGroup, port uint, tlsEnabled bool) (s *http.Server) {
 func Login(ID string) (err error) {
 	m, err := strconv.ParseUint(ID, 10, 64)
 	if err != nil {
-		return fmt.Errorf("Failed to convert ID %s to integer: %s", ID, err)
+		return fmt.Errorf("failed to convert ID %s to integer: %s", ID, err)
 	}
 	currUser = m
 	return nil
@@ -223,10 +223,10 @@ func Tag(tag string) (err error) {
 func Mode(mode string) (err error) {
 	m, err := strconv.ParseUint(mode, 10, 8)
 	if err != nil {
-		return fmt.Errorf("Failed to convert mode %s to integer: %s", mode, err)
+		return fmt.Errorf("failed to convert mode %s to integer: %s", mode, err)
 	}
 	if m > 2 {
-		return fmt.Errorf("Invalid error mode %d", m)
+		return fmt.Errorf("invalid error mode %d", m)
 	}
 	proxyMode = ProxyMode(m)
 	return nil
