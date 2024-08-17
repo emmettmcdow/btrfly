@@ -202,6 +202,8 @@ func proxy(wg *sync.WaitGroup, port uint, tlsEnabled bool) (s *http.Server) {
 			log.Fatalf("ListenAndServe failed: %s\n", err)
 		}
 	}()
+	// TODO: this is a hack. Find a way to health check the proxy.
+	time.Sleep(5 * time.Second)
 
 	return s
 }
