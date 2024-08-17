@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"sync"
+	"time"
 	// "github.com/emmettmcdow/btrfly/server/proxy"
 )
 
@@ -21,7 +22,9 @@ func controller(wg *sync.WaitGroup, port uint, tlsEnabled bool) (s *http.Server)
 		}
 		config = &tls.Config{Certificates: []tls.Certificate{cert}}
 	}
-	s = &http.Server{Addr: fmt.Sprintf(":%d", port), Handler: m, TLSConfig: config}
+
+	address := fmt.Sprintf(":%d", port)
+	s = &http.Server{Addr: address, Handler: m, TLSConfig: config}
 	// TODO: add login back
 	// m.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
 	// 	id, ok := r.Header["Id"]
@@ -67,6 +70,12 @@ func controller(wg *sync.WaitGroup, port uint, tlsEnabled bool) (s *http.Server)
 			return
 		}
 	})
+	m.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		_, err := w.Write([]byte("healthy"))
+		if err != nil {
+			fmt.Printf("Failed to write response: %s", err)
+		}
+	})
 	go func() {
 		defer wg.Done()
 		if err := s.ListenAndServe(); err != http.ErrServerClosed {
@@ -74,5 +83,20 @@ func controller(wg *sync.WaitGroup, port uint, tlsEnabled bool) (s *http.Server)
 		}
 	}()
 
-	return s
+	// Block until server is ready
+	healthClient := http.DefaultClient
+	for i := 0; i < 5; i += 1 {
+		res, err := healthClient.Get("http://" + "127.0.0.1" + address + "/health")
+		if err != nil {
+			time.Sleep(5 * time.Second)
+			continue
+		}
+		if res.StatusCode == 200 {
+			return s
+		}
+		time.Sleep(5 * time.Second)
+	}
+
+	fmt.Printf("Health check failed")
+	return nil
 }
