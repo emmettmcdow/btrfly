@@ -94,7 +94,9 @@ func TestProxyRecordAndPlayback(t *testing.T) {
 
 		err = server.Serve(l)
 		if err != nil {
-			fmt.Printf("Failed to Serve  with error: %s\n", err)
+			if err != http.ErrServerClosed {
+				t.Errorf("Failed to serve with error: %s\n", err)
+			}
 		}
 		fmt.Println("Shutting down fileserver")
 	}()
@@ -221,7 +223,9 @@ func TestPassthroughProxy(t *testing.T) {
 
 		err = server.Serve(l)
 		if err != nil {
-			t.Errorf("Failed to serve with error: %s\n", err)
+			if err != http.ErrServerClosed {
+				t.Errorf("Failed to serve with error: %s\n", err)
+			}
 		}
 		fmt.Println("Shutting down fileserver")
 	}()
