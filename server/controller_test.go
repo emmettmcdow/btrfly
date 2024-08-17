@@ -61,7 +61,7 @@ func testControllerMode(t *testing.T) {
 			req.Header.Set("Mode", strconv.FormatUint(uint64(st.mode), 10))
 			resp, err := client.Do(req)
 			if err != nil {
-				t.Errorf("Failed to \"Do\": %s\n", URL)
+				t.Errorf("Failed to \"Do\" %s with error: %s\n", URL, err)
 			}
 			if resp.StatusCode != st.resCode {
 				t.Errorf("Switching to mode %d: Got: %d, Want: %d\n", st.mode, resp.StatusCode, st.resCode)
@@ -79,7 +79,7 @@ func testControllerMode(t *testing.T) {
 			req.Header.Set("Mode", "2")
 			resp, err = client.Do(req)
 			if err != nil {
-				t.Errorf("Failed to \"Do\": %s\n", URL)
+				t.Errorf("Failed to \"Do\" %s with error: %s\n", URL, err)
 			}
 			if resp.StatusCode != 200 {
 				t.Errorf("Switching to mode %d: Got: %d, Want: %d\n", 0, resp.StatusCode, 200)
@@ -115,7 +115,7 @@ func testControllerTag(t *testing.T) {
 			req.Header.Set("Tag", st.tag)
 			resp, err := client.Do(req)
 			if err != nil {
-				t.Errorf("Failed to \"Do\": %s\n", URL)
+				t.Errorf("Failed to \"Do\" %s with error: %s\n", URL, err)
 			}
 			if resp.StatusCode != st.resCode {
 				t.Errorf("Switching to tag %s: Got: %d, Want: %d\n", st.tag, resp.StatusCode, st.resCode)
@@ -133,7 +133,7 @@ func testControllerTag(t *testing.T) {
 			req.Header.Set("Tag", "shoop da woop")
 			resp, err = client.Do(req)
 			if err != nil {
-				t.Errorf("Failed to \"Do\": %s\n", URL)
+				t.Errorf("Failed to \"Do\" %s with error: %s\n", URL, err)
 			}
 			if resp.StatusCode != 200 {
 				t.Errorf("Switching to tag %s: Got: %d, Want: %d\n", "shoop da woop", resp.StatusCode, 200)
