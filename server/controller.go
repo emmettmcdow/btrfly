@@ -22,22 +22,23 @@ func controller(wg *sync.WaitGroup, port uint, tlsEnabled bool) (s *http.Server)
 		config = &tls.Config{Certificates: []tls.Certificate{cert}}
 	}
 	s = &http.Server{Addr: fmt.Sprintf(":%d", port), Handler: m, TLSConfig: config}
-	m.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
-		id, ok := r.Header["Id"]
-		if !ok {
-			http.Error(w,
-				"No 'ID' header was passed",
-				http.StatusBadRequest)
-			return
-		}
-		err := Login(id[0])
-		if err != nil {
-			http.Error(w,
-				fmt.Sprintf("Invalid ID: %s", err),
-				http.StatusBadRequest)
-			return
-		}
-	})
+	// TODO: add login back
+	// m.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
+	// 	id, ok := r.Header["Id"]
+	// 	if !ok {
+	// 		http.Error(w,
+	// 			"No 'ID' header was passed",
+	// 			http.StatusBadRequest)
+	// 		return
+	// 	}
+	// 	err := Login(id[0])
+	// 	if err != nil {
+	// 		http.Error(w,
+	// 			fmt.Sprintf("Invalid ID: %s", err),
+	// 			http.StatusBadRequest)
+	// 		return
+	// 	}
+	// })
 	m.HandleFunc("/tag", func(w http.ResponseWriter, r *http.Request) {
 		tag, ok := r.Header["Tag"]
 		if !ok {

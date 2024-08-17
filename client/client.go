@@ -40,6 +40,7 @@ func main() {
 	os.Exit(out)
 }
 
+// TODO: add login back
 // TODO: pass config and deconfig errors back up!
 func _main(dns DNSConfig, ctrlEndpoint string, arglen int, args []string) int {
 	var subcommand string
@@ -92,15 +93,15 @@ func _main(dns DNSConfig, ctrlEndpoint string, arglen int, args []string) int {
 			fmt.Fprintf(os.Stderr, "Failed to set the tag: %s\n\n", err)
 			return 1
 		}
-	case "login":
-		if arglen != 2 {
-			fmt.Fprintf(os.Stderr, "No login id given.\n")
-			return 1
-		}
-		if err := login(args[1], ctrlEndpoint); err != nil {
-			fmt.Fprintf(os.Stderr, "Failed to login: %s\n\n", err)
-			return 1
-		}
+	// case "login":
+	// 	if arglen != 2 {
+	// 		fmt.Fprintf(os.Stderr, "No login id given.\n")
+	// 		return 1
+	// 	}
+	// 	if err := login(args[1], ctrlEndpoint); err != nil {
+	// 		fmt.Fprintf(os.Stderr, "Failed to login: %s\n\n", err)
+	// 		return 1
+	// 	}
 	case "mode":
 		if arglen != 2 {
 			fmt.Fprintf(os.Stderr, "No mode given.\n")
@@ -130,10 +131,10 @@ func _main(dns DNSConfig, ctrlEndpoint string, arglen int, args []string) int {
 				fmt.Printf("    mode - change the mode of operation of the btrfly service\n")
 				fmt.Printf("    mode_verb is required and passed as an argument.\n")
 				fmt.Printf("    mode_verb is one of: record, playback, standby.\n")
-			case "login":
-				fmt.Printf("Help: btrfly login id\n")
-				fmt.Printf("    login - set your credentials so that you can use the btrfly service.\n")
-				fmt.Printf("    id is required and passed as an argument.\n")
+			// case "login":
+			// 	fmt.Printf("Help: btrfly login id\n")
+			// 	fmt.Printf("    login - set your credentials so that you can use the btrfly service.\n")
+			// 	fmt.Printf("    id is required and passed as an argument.\n")
 			case "help":
 				defaultHelp()
 			default:
@@ -158,7 +159,7 @@ func defaultHelp() {
 	fmt.Printf("    config   - configure this machine to utilize the btrfly server\n")
 	fmt.Printf("    deconfig - deconfigure this machine (...)\n")
 	fmt.Printf("    tag      - set the tag to identify this current build\n")
-	fmt.Printf("    login    - set your credentials so that you can use the btrfly service\n")
+	// fmt.Printf("    login    - set your credentials so that you can use the btrfly service\n")
 	fmt.Printf("    mode     - change the mode of operation of the btrfly service\n")
 	fmt.Printf("    help     - pass another subcommand to get info about that subcommand\n")
 }
@@ -183,25 +184,25 @@ func tag(tag string, ctrlEndpoint string) (err error) {
 	return nil
 }
 
-func login(id string, ctrlEndpoint string) (err error) {
-	req, err := http.NewRequest("GET", "http://"+ctrlEndpoint+"/login", http.NoBody)
-	if err != nil {
-		return err
-	}
-	req.Header.Add("Id", id)
-	resp, err := client.Do(req)
-	if err != nil {
-		return fmt.Errorf("failed to perform http request: %s", err)
-	}
-	if resp.StatusCode != 200 {
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return fmt.Errorf("got response code %d, and failed to read body", resp.StatusCode)
-		}
-		return fmt.Errorf("got response code %d with body:\n%s", resp.StatusCode, body)
-	}
-	return nil
-}
+// func login(id string, ctrlEndpoint string) (err error) {
+// 	req, err := http.NewRequest("GET", "http://"+ctrlEndpoint+"/login", http.NoBody)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	req.Header.Add("Id", id)
+// 	resp, err := client.Do(req)
+// 	if err != nil {
+// 		return fmt.Errorf("failed to perform http request: %s", err)
+// 	}
+// 	if resp.StatusCode != 200 {
+// 		body, err := io.ReadAll(resp.Body)
+// 		if err != nil {
+// 			return fmt.Errorf("got response code %d, and failed to read body", resp.StatusCode)
+// 		}
+// 		return fmt.Errorf("got response code %d with body:\n%s", resp.StatusCode, body)
+// 	}
+// 	return nil
+// }
 
 func mode(mode string, ctrlEndpoint string) (err error) {
 	var modeI string

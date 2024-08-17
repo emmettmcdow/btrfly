@@ -144,63 +144,65 @@ func testControllerTag(t *testing.T) {
 	}
 }
 
-func testControllerLogin(t *testing.T) {
-	subtests := []struct {
-		id      string
-		resCode int
-	}{
-		{"420", 200},
-		{"4200", 200},
-		{"-1", 400},
-		{"", 400},
-	}
-	client := &http.Client{}
+// TODO: Add login back
 
-	for _, st := range subtests {
-		t.Run(fmt.Sprintf("LOGIN{%s}-GET{%d}", st.id, st.resCode), func(t *testing.T) {
-			want := baseWant
-			verifyState(want, t)
+// func testControllerLogin(t *testing.T) {
+// 	subtests := []struct {
+// 		id      string
+// 		resCode int
+// 	}{
+// 		{"420", 200},
+// 		{"4200", 200},
+// 		{"-1", 400},
+// 		{"", 400},
+// 	}
+// 	client := &http.Client{}
 
-			URL := "http://127.0.0.1:5678/login"
-			method := "GET"
-			req, err := http.NewRequest(method, URL, http.NoBody)
-			if err != nil {
-				t.Errorf("Failed to generate new request for %s\n", URL)
-			}
-			req.Header.Set("ID", st.id)
-			resp, err := client.Do(req)
-			if err != nil {
-				t.Errorf("Failed to \"Do\": %s\n", URL)
-			}
-			if resp.StatusCode != st.resCode {
-				t.Errorf("Logging in as user %s: Got: %d, Want: %d\n", st.id, resp.StatusCode, 200)
-			}
-			if st.resCode == 200 {
-				want.user, err = strconv.ParseUint(st.id, 10, 64)
-				if err != nil {
-					t.Errorf("Failed to convert st.id to uint: %s", err)
-				}
-			}
-			verifyState(want, t)
+// 	for _, st := range subtests {
+// 		t.Run(fmt.Sprintf("LOGIN{%s}-GET{%d}", st.id, st.resCode), func(t *testing.T) {
+// 			want := baseWant
+// 			verifyState(want, t)
 
-			// Reset to 0
-			req, err = http.NewRequest(method, URL, http.NoBody)
-			if err != nil {
-				t.Errorf("Failed to generate new request for %s\n", URL)
-			}
-			req.Header.Set("ID", "0")
-			resp, err = client.Do(req)
-			if err != nil {
-				t.Errorf("Failed to \"Do\": %s\n", URL)
-			}
-			if resp.StatusCode != 200 {
-				t.Errorf("Logging in as user 0: Got: %d, Want: %d\n", resp.StatusCode, 200)
-			}
-			want = baseWant
-			verifyState(want, t)
-		})
-	}
-}
+// 			URL := "http://127.0.0.1:5678/login"
+// 			method := "GET"
+// 			req, err := http.NewRequest(method, URL, http.NoBody)
+// 			if err != nil {
+// 				t.Errorf("Failed to generate new request for %s\n", URL)
+// 			}
+// 			req.Header.Set("ID", st.id)
+// 			resp, err := client.Do(req)
+// 			if err != nil {
+// 				t.Errorf("Failed to \"Do\": %s\n", URL)
+// 			}
+// 			if resp.StatusCode != st.resCode {
+// 				t.Errorf("Logging in as user %s: Got: %d, Want: %d\n", st.id, resp.StatusCode, 200)
+// 			}
+// 			if st.resCode == 200 {
+// 				want.user, err = strconv.ParseUint(st.id, 10, 64)
+// 				if err != nil {
+// 					t.Errorf("Failed to convert st.id to uint: %s", err)
+// 				}
+// 			}
+// 			verifyState(want, t)
+
+// 			// Reset to 0
+// 			req, err = http.NewRequest(method, URL, http.NoBody)
+// 			if err != nil {
+// 				t.Errorf("Failed to generate new request for %s\n", URL)
+// 			}
+// 			req.Header.Set("ID", "0")
+// 			resp, err = client.Do(req)
+// 			if err != nil {
+// 				t.Errorf("Failed to \"Do\": %s\n", URL)
+// 			}
+// 			if resp.StatusCode != 200 {
+// 				t.Errorf("Logging in as user 0: Got: %d, Want: %d\n", resp.StatusCode, 200)
+// 			}
+// 			want = baseWant
+// 			verifyState(want, t)
+// 		})
+// 	}
+// }
 
 func TestController(t *testing.T) {
 	// Start up controller
@@ -221,7 +223,7 @@ func TestController(t *testing.T) {
 		name    string
 		subtest func(t *testing.T)
 	}{
-		{"login", testControllerLogin},
+		// {"login", testControllerLogin},
 		{"mode", testControllerMode},
 		{"tag", testControllerTag},
 	}
