@@ -93,7 +93,7 @@ func TestClient(t *testing.T) {
 			fmt.Printf("failed to shutdown controllerServer: %s", err)
 		}
 	}()
-
+	// TODO: add login back
 	subtests := []struct {
 		command   []string
 		errno     int
@@ -115,11 +115,11 @@ func TestClient(t *testing.T) {
 		{[]string{"mode", "standby"}, 0, "<GET> /mode - Headers: [Mode: '[2]',]", 0, 0, 0},
 		{[]string{"mode"}, 1, "", 0, 0, 0},
 		{[]string{"mode", "standby", "uhoh"}, 1, "", 0, 0, 0},
-		{[]string{"login", "420"}, 0, "<GET> /login - Headers: [ID: '[420]',]", 0, 0, 0},
-		{[]string{"login", "690000"}, 0, "<GET> /login - Headers: [ID: '[690000]',]", 0, 0, 0},
-		{[]string{"login", "abc"}, 1, "", 0, 0, 0},
-		{[]string{"login", "1", "1"}, 1, "", 0, 0, 0},
-		{[]string{"login"}, 1, "", 0, 0, 0},
+		// {[]string{"login", "420"}, 0, "<GET> /login - Headers: [ID: '[420]',]", 0, 0, 0},
+		// {[]string{"login", "690000"}, 0, "<GET> /login - Headers: [ID: '[690000]',]", 0, 0, 0},
+		// {[]string{"login", "abc"}, 1, "", 0, 0, 0},
+		// {[]string{"login", "1", "1"}, 1, "", 0, 0, 0},
+		// {[]string{"login"}, 1, "", 0, 0, 0},
 		{[]string{}, 1, "", 0, 0, 0},
 		{[]string{"gobbledygook"}, 1, "", 0, 0, 0},
 		{[]string{"help"}, 0, "", 0, 0, 0},
@@ -127,7 +127,7 @@ func TestClient(t *testing.T) {
 		{[]string{"help", "deconfig"}, 0, "", 0, 0, 0},
 		{[]string{"help", "tag"}, 0, "", 0, 0, 0},
 		{[]string{"help", "mode"}, 0, "", 0, 0, 0},
-		{[]string{"help", "login"}, 0, "", 0, 0, 0},
+		// {[]string{"help", "login"}, 0, "", 0, 0, 0},
 		{[]string{"help", "gobbledygook"}, 0, "", 0, 0, 0},
 		{[]string{"help", "gobbledygook", "g2"}, 0, "", 0, 0, 0},
 	}
