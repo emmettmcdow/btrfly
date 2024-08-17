@@ -55,16 +55,14 @@ func TestProxyRecordAndPlayback(t *testing.T) {
 
 	aOriginal := "this is the /root/a file"
 	bOriginal := "this is the /root/b file"
-	cOriginal := "this is the /root/c file"
 
 	aUpdated := "Updated /root/a file"
 	bUpdated := "Updated /root/b file"
 	// cUpdated := "Updated /root/c file"
 
 	memoryFS := fstest.MapFS{
-		"root/a": {Data: []byte(aOriginal)},
-		"root/b": {Data: []byte(bOriginal)},
-		"root/c": {Data: []byte(cOriginal)},
+		"root/a": &fstest.MapFile{Data: []byte(aOriginal)},
+		"root/b": &fstest.MapFile{Data: []byte(bOriginal)},
 	}
 
 	// btrfly
