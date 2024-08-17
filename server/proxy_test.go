@@ -190,9 +190,9 @@ func TestPassthroughProxy(t *testing.T) {
 	serverReady := make(chan func() (err error))
 
 	memoryFS := fstest.MapFS{
-		"root/a": {Data: []byte("this is the /root/a file")},
-		"root/b": {Data: []byte("this is the /root/b file")},
-		"root/c": {Data: []byte("this is the /root/c file")},
+		"root/a": &fstest.MapFile{Data: []byte("this is the /root/a file")},
+		"root/b": &fstest.MapFile{Data: []byte("this is the /root/b file")},
+		"root/c": &fstest.MapFile{Data: []byte("this is the /root/c file")},
 	}
 
 	// btrfly
@@ -294,11 +294,10 @@ type relayRequestCase struct {
 
 func TestRelayRequest(t *testing.T) {
 	var fakeClient clientSender
-
 	stdHeader := http.Header{
-		"Key1": {"1a", "1b", "1c"},
-		"Key2": {"2a", "2b", "2c"},
-		"Key3": {"3a", "3b", "3c"},
+		"Key1": []string{"1a", "1b", "1c"},
+		"Key2": []string{"2a", "2b", "2c"},
+		"Key3": []string{"3a", "3b", "3c"},
 	}
 	stdText := "Woohoo!\noh no\n WOOHOO! "
 	stdBody := strings.NewReader(stdText)
@@ -366,9 +365,9 @@ type genUpstreamRequest struct {
 func TestGenerateUpstreamRequest(t *testing.T) {
 
 	stdHeader := http.Header{
-		"Key1": {"1a", "1b", "1c"},
-		"Key2": {"2a", "2b", "2c"},
-		"Key3": {"3a", "3b", "3c"},
+		"Key1": []string{"1a", "1b", "1c"},
+		"Key2": []string{"2a", "2b", "2c"},
+		"Key3": []string{"3a", "3b", "3c"},
 	}
 	stdBody := io.NopCloser(strings.NewReader("Woohoo!\noh no\n WOOHOO! "))
 	r, _ := http.NewRequest("GET", "http://google.com/a/b/c", stdBody)
